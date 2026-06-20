@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人博客 V1 Demo</title>
+  <link rel="stylesheet" href="./css/demo-v1.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <a class="brand" href="#home">
+        <span class="brand-mark">W</span>
+        <span class="brand-copy">
+          <strong>Wen's Field Notes</strong>
+          <small>Rust blog v1 visual demo</small>
+        </span>
+      </a>
+      <nav class="topnav" aria-label="主导航">
+        <a href="#home">首页</a>
+        <a href="#blog">博客</a>
+        <a href="#article">文章</a>
+        <a href="#notes">笔记</a>
+        <a href="#projects">项目</a>
+        <a href="#about">关于</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero preview-section" id="home">
+        <div class="section-kicker">首页预览</div>
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <p class="eyebrow">正在学习 Rust，也在认真做一个长期更新的个人网站。</p>
+            <h1>把项目、笔记和正在形成的思考，做成一份持续公开生长的个人档案。</h1>
+            <p class="lede">
+              这个第一版 demo 不是功能页，而是整站气质的预演。目标是先把“清晰、耐看、能长期打磨”的基底做对。
+            </p>
+            <div class="hero-actions">
+              <a class="button primary" href="#blog">阅读最新文章</a>
+              <a class="button ghost" href="#projects">查看项目清单</a>
+            </div>
+          </div>
+          <aside class="hero-aside">
+            <div class="note-card warm">
+              <span class="meta-label">当前主题</span>
+              <h2>Rust + 个人博客</h2>
+              <p>先用稳定的服务端架构把内容站做出来，再边做边学语言、工程组织和部署。</p>
+            </div>
+            <div class="note-card">
+              <span class="meta-label">站点气质</span>
+              <ul>
+                <li>内容优先</li>
+                <li>克制但不无聊</li>
+                <li>像个人作品，不像现成模板</li>
+              </ul>
+            </div>
+          </aside>
+        </div>
+
+        <div class="home-panels">
+          <article class="panel feature-panel">
+            <div class="panel-head">
+              <span class="meta-label">最新博客</span>
+              <a href="#blog">更多文章</a>
+            </div>
+            <div class="stack-list">
+              <a class="stack-item" href="#article">
+                <strong>用 Axum 搭第一个博客骨架时，我真正理解了路由是什么</strong>
+                <span>不是教程复述，而是把“请求怎么流经程序”第一次看清楚。</span>
+              </a>
+              <a class="stack-item" href="#article">
+                <strong>为什么第一版不急着上数据库</strong>
+                <span>内容站的核心问题，往往不是数据复杂，而是信息组织和表达节奏。</span>
+              </a>
+              <a class="stack-item" href="#article">
+                <strong>把学习文档和产品文档都留在同一个仓库之后</strong>
+                <span>项目开始第一次看起来像一个长期产品，而不是一次性练手代码。</span>
+              </a>
+            </div>
+          </article>
+
+          <article class="panel split-panel">
+            <div>
+              <span class="meta-label">最近笔记</span>
+              <p>记录学 Rust 时卡住的瞬间、想法转折和设计取舍。</p>
+            </div>
+            <div class="mini-list">
+              <span>所有权不是“难语法”，而是一套资源流转规则。</span>
+              <span>模板先做对结构，再做细节，不然只会越改越乱。</span>
+              <span>第一版的前端必须能看，不然很难长期维护热情。</span>
+            </div>
+          </article>
+
+          <article class="panel feature-panel compact">
+            <div class="panel-head">
+              <span class="meta-label">代表项目</span>
+              <a href="#projects">项目页</a>
+            </div>
+            <div class="project-feature">
+              <h3>个人博客网站</h3>
+              <p>Rust / Axum / Askama / Markdown</p>
+              <small>这是我用来承载项目、笔记和学习轨迹的主站，也是我的 Rust 学习现场。</small>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="preview-section" id="blog">
+        <div class="section-heading">
+          <div>
+            <div class="section-kicker">博客列表页</div>
+            <h2>正式文章应该像作品被陈列，而不是像日志被堆叠。</h2>
+          </div>
+          <p>列表页强调可扫描性与节奏感，标题先抓眼，摘要再决定是否继续读下去。</p>
+        </div>
+
+        <div class="blog-layout">
+          <aside class="blog-filter">
+            <span class="meta-label">标签筛选预览</span>
+            <button class="chip active" type="button">全部</button>
+            <button class="chip" type="button">Rust</button>
+            <button class="chip" type="button">Web</button>
+            <button class="chip" type="button">Notes</button>
+            <button class="chip" type="button">Design</button>
+          </aside>
+
+          <div class="blog-feed">
+            <article class="blog-card featured">
+              <p class="blog-meta">2026.06.20 · Rust · 架构</p>
+              <h3>把个人博客当成长期产品来做之后，我反而更容易开始。</h3>
+              <p>以前总把“先做得完美”当目标，结果迟迟动不了手。现在先把结构和路线定下来，站点终于有了能长大的基础。</p>
+            </article>
+            <article class="blog-card">
+              <p class="blog-meta">2026.06.18 · Rust · Axum</p>
+              <h3>第一次看懂 handler，我才明白 Web 程序为什么不是“页面集合”。</h3>
+              <p>路由不是菜单，handler 也不是一个孤零零的函数。它们决定了用户请求如何真正进入系统。</p>
+            </article>
+            <article class="blog-card">
+              <p class="blog-meta">2026.06.15 · Blog · Product</p>
+              <h3>为什么第一版就该认真做前端，而不是后面推翻重来。</h3>
+              <p>一个长期更新的个人站，如果第一版自己都不想多看两眼，后面很难有持续打磨的动力。</p>
+            </article>
+            <article class="blog-card">
+              <p class="blog-meta">2026.06.12 · Learning · Rust</p>
+              <h3>我开始把学习文档写进项目仓库，这件事比背多少语法更有用。</h3>
+              <p>知识脱离项目很快会散，但一旦和真实模块绑定，理解会立刻变得具体。</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="preview-section article-preview" id="article">
+        <div class="section-heading article-head">
+          <div>
+            <div class="section-kicker">博客详情页</div>
+            <h2>文章页的重点不是装饰，而是让内容被舒服地读完。</h2>
+          </div>
+          <div class="article-nav-inline">
+            <a href="#blog">返回列表</a>
+            <a href="#notes">下一页预览</a>
+          </div>
+        </div>
+
+        <article class="article-card">
+          <header class="article-header">
+            <p class="blog-meta">2026.06.20 · Rust / 架构 / 学习</p>
+            <h3>为什么第一版博客不该只是功能壳子，而应该从一开始就有能公开展示的样子</h3>
+            <div class="tag-row">
+              <span class="chip soft">Rust</span>
+              <span class="chip soft">Blog</span>
+              <span class="chip soft">Design</span>
+            </div>
+          </header>
+
+          <div class="article-body">
+            <p>我后来意识到，所谓“先把功能做出来，样式以后再说”，对长期个人项目往往是一种拖延的变体。它看起来务实，实际上是在把最影响持续投入意愿的部分往后推。</p>
+            <p>对我来说，这个博客不是临时练手页，而是会持续记录项目、笔记和思考的地方。既然它本身也是作品的一部分，那第一版就不能只像一个占位页面。</p>
+            <blockquote>
+              第一版不一定要极致，但一定要已经具备“我愿意公开给别人看”的完成感。
+            </blockquote>
+            <p>这并不意味着过度打磨每个细节，而是先把大方向做对：排版舒服、层次清楚、风格统一、页面之间像同一个网站长出来的。</p>
+            <pre><code>fn main() {
+    println!("先把结构和方向做对，再继续打磨细节。");
+}</code></pre>
+            <p>我希望这个站点以后每次回头看，看到的不是“当时凑合的壳子”，而是一套从第一版就已经值得被继续完善的基础。</p>
+          </div>
+
+          <footer class="article-footer">
+            <a href="#blog">上一篇：为什么第一版不急着上数据库</a>
+            <a href="#notes">下一篇：笔记页应该更轻一些</a>
+          </footer>
+        </article>
+      </section>
+
+      <section class="preview-section" id="notes">
+        <div class="section-heading">
+          <div>
+            <div class="section-kicker">笔记页</div>
+            <h2>笔记不必像文章一样完整，但要像思考留下的路标。</h2>
+          </div>
+          <p>这里比博客更轻、更快，像工作台边上的记录条，而不是正式发表的专栏。</p>
+        </div>
+
+        <div class="notes-grid">
+          <article class="note-sheet">
+            <span class="meta-label">2026.06.20</span>
+            <h3>所有权最容易卡住的不是定义，而是“为什么编译器要拦我”。</h3>
+            <p>以后可以专门写一篇：把所有权当成资源管理规则来理解，会比当成语法规则舒服得多。</p>
+          </article>
+          <article class="note-sheet">
+            <span class="meta-label">2026.06.19</span>
+            <h3>主页首屏不想做成技术简历，我更想让它像一份正在形成中的工作说明书。</h3>
+            <p>比起列技能，更想表达“我现在在关心什么、在做什么、在学习什么”。</p>
+          </article>
+          <article class="note-sheet accent">
+            <span class="meta-label">2026.06.18</span>
+            <h3>产品文档、学习文档、源码都在一个仓库之后，项目终于有了秩序感。</h3>
+            <p>后面如果继续长大，也不容易散架。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="preview-section" id="projects">
+        <div class="section-heading">
+          <div>
+            <div class="section-kicker">项目展示页</div>
+            <h2>项目页像一个清晰的作品架，不需要热闹，但要让人知道你做了什么。</h2>
+          </div>
+          <p>强调项目的目的、技术栈和当前状态，而不是把所有东西都挤在同一层里。</p>
+        </div>
+
+        <div class="project-grid">
+          <article class="project-card large">
+            <div class="project-topline">
+              <span class="status live">进行中</span>
+              <span class="project-year">2026</span>
+            </div>
+            <h3>个人博客网站</h3>
+            <p>一个用 Rust 搭建的个人内容站点，用来承载博客、笔记、项目记录，也是学习 Rust 的主战场。</p>
+            <ul class="tech-list">
+              <li>Axum</li>
+              <li>Askama</li>
+              <li>Markdown</li>
+            </ul>
+            <div class="project-links">
+              <a href="#home">站点预览</a>
+              <a href="#article">设计方向</a>
+            </div>
+          </article>
+          <article class="project-card">
+            <div class="project-topline">
+              <span class="status draft">草稿阶段</span>
+              <span class="project-year">2026</span>
+            </div>
+            <h3>Rust 学习系统</h3>
+            <p>围绕博客项目推进的交互式学习流程，让概念和真实工程互相对应。</p>
+            <ul class="tech-list">
+              <li>Skill</li>
+              <li>Docs</li>
+              <li>Workflow</li>
+            </ul>
+          </article>
+          <article class="project-card">
+            <div class="project-topline">
+              <span class="status draft">待扩展</span>
+              <span class="project-year">2026</span>
+            </div>
+            <h3>内容发布工具链</h3>
+            <p>后续可能补充自动化构建、部署、RSS、sitemap 等静态内容发布能力。</p>
+            <ul class="tech-list">
+              <li>Deploy</li>
+              <li>RSS</li>
+              <li>SEO</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="preview-section about-section" id="about">
+        <div class="section-kicker">关于页</div>
+        <div class="about-layout">
+          <div class="about-copy">
+            <h2>我想把这个网站做成一份持续更新的公开工作现场，而不是一张静态名片。</h2>
+            <p>这里会放我正在做的项目、正在学习的东西、一些阶段性的判断，以及那些还没完全想清楚但值得留下来的记录。</p>
+            <p>如果以后有人通过一篇文章、一个项目，或者一段关于 Rust 的学习记录走进来，我希望他看到的是一个真实、认真、还在继续生长的人。</p>
+          </div>
+          <div class="about-sidebar">
+            <div class="identity-card">
+              <span class="meta-label">关键词</span>
+              <ul>
+                <li>Rust 初学者</li>
+                <li>长期项目主义</li>
+                <li>内容驱动网站</li>
+                <li>边做边学</li>
+              </ul>
+            </div>
+            <div class="identity-card contact">
+              <span class="meta-label">联系占位</span>
+              <p>GitHub / Email / 更多入口后续接入</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="./js/demo-v1.js"></script>
+</body>
+</html>

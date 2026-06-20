@@ -1,0 +1,14 @@
+# Rust
+/target/
+Cargo.lock
+
+# Editor
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log
