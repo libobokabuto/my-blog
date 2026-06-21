@@ -1,0 +1,23 @@
+[package]
+name = "server"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "server"
+path = "src/main.rs"
+
+[features]
+default = []
+ssr = []
+
+[dependencies]
+app = { path = "../app", features = ["ssr"] }
+any_spawner = { workspace = true, features = ["tokio"] }
+axum.workspace = true
+leptos = { workspace = true, features = ["ssr"] }
+leptos_axum.workspace = true
+tokio.workspace = true
+tower-http.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true

@@ -1,4 +1,4 @@
-const links = [...document.querySelectorAll(".topnav a")];
+﻿const links = [...document.querySelectorAll(".topnav a")];
 const sections = [...document.querySelectorAll(".preview-section")];
 
 const setActiveLink = () => {

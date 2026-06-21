@@ -1,119 +1,121 @@
 # my-blog
 
-一个基于 Rust 的个人博客项目，用来记录项目、笔记和学习过程。
+一个以内容为核心、使用全栈 Rust 正式实现的个人网站项目。
 
-当前仓库还处于第一版规划与前端 demo 阶段，重点是先把产品结构、文档体系、学习体系和视觉方向搭起来，再逐步进入正式开发。
+这个仓库既是我的博客站点，也是我用 `Leptos`、`Leptos SSR`、`Axum` 和 `Markdown` 持续推进的 Rust 实战项目。它更偏向“可长期维护的内容站”，而不是一开始就做成带后台、带数据库、带复杂交互的大型系统。
 
-## 当前目标
+## 项目定位
 
-- 用 Rust 构建一个长期维护的个人博客网站
-- 把博客、笔记、项目展示统一放进同一个站点
-- 通过真实项目推进 Rust 学习，而不是脱离项目单独学语法
-- 先完成第一版可展示原型，再逐步接入后端和内容系统
+- 用 Rust 贯通页面渲染、服务端输出和内容组织
+- 先把博客主链路做扎实，再扩展更多内容类型
+- 保留设计参考稿，让产品规划、视觉参考和正式代码并行演进
 
-## 第一版方向
+## 技术栈
 
-第一版聚焦以下页面与能力：
-
-- 首页
-- 博客列表页
-- 博客详情页
-- 笔记页
-- 项目展示页
-- 关于页
-
-当前技术方向已经确定为：
-
+- `Rust`
+- `Leptos`
+- `Leptos SSR`
 - `Axum`
-- `Askama`
 - `Markdown`
+- `pulldown-cmark`
+- `CSS`
 
-也就是以 Rust 服务端渲染为核心，先做一个可长期打磨、可自部署、适合边做边学的个人内容站点。
+## 当前已实现
+
+- 正式的 `Leptos SSR` 项目骨架
+- 首页 `/`
+- 博客列表页 `/blog`
+- 博客详情页 `/blog/:slug`
+- 笔记页 `/notes`
+- 项目页 `/projects`
+- 关于页 `/about`
+- 基于本地 `Markdown` 的博客内容读取与渲染
+- 基于本地 `Markdown` 的笔记与项目内容读取
+- 博客详情页上一篇 / 下一篇导航
+- `rss.xml`
+- `sitemap.xml`
+
+## 当前暂不实现
+
+- 数据库
+- 评论系统
+- 站内搜索
+- 后台管理
 
 ## 目录结构
 
 ```text
 my-blog/
-├── src/                 # Rust 源码目录
-├── templates/           # 模板目录
-├── static/              # 静态资源与 demo
-├── content/             # 博客、笔记、项目内容
-├── PRDS/                # 产品需求、UI 设计、开发计划
-├── LEARNING/            # Rust 学习文档
-├── scripts/             # 辅助脚本
-├── deploy/              # 部署相关配置
-└── README.md
+├─ app/                  # 共享 UI、路由、页面组件、内容装配逻辑
+├─ client/               # 浏览器端 hydrate 入口
+├─ server/               # Axum + Leptos SSR 服务端入口
+├─ style/                # 全站样式入口
+├─ content/              # Markdown 内容源
+├─ static/               # 静态资源与视觉参考稿
+├─ PRDS/                 # 产品需求、开发计划、版本记录
+├─ LEARNING/             # Rust 学习记录
+├─ scripts/              # 辅助脚本
+├─ deploy/               # 部署相关配置
+├─ Cargo.toml            # Rust workspace 配置
+└─ README.md
 ```
 
-## 当前已完成内容
+## 内容组织
 
-### 1. 项目基础目录
+- `content/blog`：正式博客文章
+- `content/notes`：后续笔记内容预留
+- `content/projects`：后续项目展示内容预留
 
-已经建立了基础目录结构，包括：
+当前 `blog`、`notes` 和 `projects` 都已经接进正式页面系统，其中 `blog` 是最完整的主内容链路，`notes` 与 `projects` 是第一版正式补齐的轻量内容页。
 
-- `src`
-- `templates`
-- `static`
-- `content`
-- `PRDS`
-- `LEARNING`
-- `scripts`
-- `deploy`
+## 设计参考
 
-### 2. 第一版产品文档
+`static/demo-v1.html`、`static/css/demo-v1.css`、`static/js/demo-v1.js` 作为第一版视觉与信息结构参考稿继续保留。
 
-已建立第一版产品文档总目录：
+它们现在的职责是“设计参考”，不是正式运行时代码。
 
-- `PRDS/第一版/产品需求.md`
-- `PRDS/第一版/UI设计.md`
-- `PRDS/第一版/开发计划.md`
+## 本地运行
 
-并为核心模块建立了子文档骨架：
+先确认本机已经具备：
 
-- `01-首页`
-- `02-博客系统`
-- `03-笔记系统`
-- `04-项目展示`
-- `05-关于页`
+- Rust 工具链：`stable-x86_64-pc-windows-msvc`
+- `cargo-leptos`
+- Visual Studio C++ Build Tools
+- `wasm32-unknown-unknown` target
 
-### 3. 第一版前端 demo
+开发模式运行：
 
-当前仓库包含第一版静态视觉 demo：
+```powershell
+cargo leptos watch
+```
 
-- `static/demo-v1.html`
-- `static/css/demo-v1.css`
-- `static/js/demo-v1.js`
+默认访问地址：
 
-这个 demo 主要用于确认第一版整体视觉方向，不代表后端功能已经接入。
+```text
+http://127.0.0.1:3000
+```
 
-## 开发原则
+生产构建：
 
-- 先把结构和方向做对，再持续打磨细节
-- 第一版不是临时功能壳子，而是后续迭代的正式基础
-- 项目推进为主，Rust 学习围绕真实任务展开
-- 产品文档、学习文档和代码放在同一个仓库中长期维护
+```powershell
+cargo leptos build --release
+```
 
-## 后续计划
+## 适合从哪里开始看
 
-接下来会按以下顺序推进：
+如果你是来学习这个项目，可以按这个顺序阅读：
 
-1. 继续完善第一版前端原型
-2. 初始化 Rust 项目骨架
-3. 接入 `Axum`
-4. 接入 `Askama`
-5. 接入 Markdown 内容系统
-6. 逐步完成第一版页面与内容展示能力
+1. `README.md`
+2. `PRDS/第一版/产品需求.md`
+3. `PRDS/第一版/开发计划.md`
+4. `app/src/lib.rs`
+5. `app/src/content.rs`
+6. `content/blog/*.md`
 
-## 状态说明
+## 版本与迭代记录
 
-当前仓库状态：
+项目迭代记录不放在总 `README` 里，统一放在：
 
-- 处于早期搭建阶段
-- 已完成文档与 demo 基础建设
-- 尚未进入完整 Rust 功能开发阶段
+- `PRDS/第一版/VERSION_NOTES.md`
 
-## 说明
-
-这个项目既是个人网站，也是 Rust 实战学习项目。
-
-后续开发不会采用“先学完所有 Rust 再开始做项目”的方式，而是以项目推进为主，在实现真实功能的过程中补齐 Rust 知识。
+如果你想看当前完成范围、第一版待补项和阶段性变化，直接看那份文档会更清楚。
