@@ -1,16 +1,16 @@
 use app::{content, shell};
 use axum::{
-    Router,
     body::Body,
     extract::Request,
-    http::{HeaderValue, StatusCode, header},
+    http::{header, HeaderValue, StatusCode},
     response::IntoResponse,
     routing::get,
+    Router,
 };
 use leptos::config::get_configuration;
 use leptos_axum::{handle_server_fns, render_app_to_stream};
 use tower_http::services::ServeDir;
-use tracing_subscriber::{EnvFilter, fmt};
+use tracing_subscriber::{fmt, EnvFilter};
 
 #[tokio::main]
 async fn main() {
@@ -31,15 +31,24 @@ async fn main() {
     let site_url = format!("http://{}", leptos_options.site_addr);
 
     let app = Router::new()
-        .route("/api/{*fn_name}", get(server_fn_handler).post(server_fn_handler))
-        .route("/rss.xml", get({
-            let site_url = site_url.clone();
-            move || rss_handler(site_url.clone())
-        }))
-        .route("/sitemap.xml", get({
-            let site_url = site_url.clone();
-            move || sitemap_handler(site_url.clone())
-        }))
+        .route(
+            "/api/{*fn_name}",
+            get(server_fn_handler).post(server_fn_handler),
+        )
+        .route(
+            "/rss.xml",
+            get({
+                let site_url = site_url.clone();
+                move || rss_handler(site_url.clone())
+            }),
+        )
+        .route(
+            "/sitemap.xml",
+            get({
+                let site_url = site_url.clone();
+                move || sitemap_handler(site_url.clone())
+            }),
+        )
         .nest_service("/pkg", ServeDir::new(format!("{site_root}/pkg")))
         .fallback(render_app_to_stream(move || shell(shell_options.clone())))
         .with_state(leptos_options);
@@ -59,7 +68,10 @@ async fn server_fn_handler(request: Request<Body>) -> impl IntoResponse {
 async fn rss_handler(site_url: String) -> impl IntoResponse {
     match content::build_rss_xml(&site_url).await {
         Ok(body) => (
-            [(header::CONTENT_TYPE, HeaderValue::from_static("application/rss+xml; charset=utf-8"))],
+            [(
+                header::CONTENT_TYPE,
+                HeaderValue::from_static("application/rss+xml; charset=utf-8"),
+            )],
             body,
         )
             .into_response(),
@@ -74,7 +86,10 @@ async fn rss_handler(site_url: String) -> impl IntoResponse {
 async fn sitemap_handler(site_url: String) -> impl IntoResponse {
     match content::build_sitemap_xml(&site_url).await {
         Ok(body) => (
-            [(header::CONTENT_TYPE, HeaderValue::from_static("application/xml; charset=utf-8"))],
+            [(
+                header::CONTENT_TYPE,
+                HeaderValue::from_static("application/xml; charset=utf-8"),
+            )],
             body,
         )
             .into_response(),

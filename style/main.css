@@ -260,7 +260,11 @@ a {
 .about-sidebar,
 .notes-grid,
 .projects-grid,
-.project-links {
+.project-links,
+.project-section-list,
+.archive-card-list,
+.tag-archive-layout,
+.search-results-list {
   display: grid;
   gap: var(--space-4);
 }
@@ -312,6 +316,16 @@ a {
   color: var(--accent-deep);
 }
 
+.stack-item,
+.mini-list-link,
+.note-entry,
+.pager-card {
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
 .stack-item {
   display: grid;
   gap: 0.25rem;
@@ -336,6 +350,15 @@ a {
   padding-top: 0;
 }
 
+.stack-item:hover,
+.mini-list-link:hover {
+  transform: translateY(-2px);
+}
+
+.compact-tags {
+  gap: 0.45rem;
+}
+
 .mini-list-link strong,
 .note-entry h3,
 .project-card h3,
@@ -346,6 +369,10 @@ a {
 .project-feature {
   display: grid;
   gap: 0.3rem;
+}
+
+.project-feature:hover {
+  transform: translateY(-2px);
 }
 
 .manifesto-list,
@@ -458,8 +485,16 @@ a {
   align-items: center;
 }
 
+.note-detail-head {
+  align-items: start;
+}
+
 .article-card {
   padding: clamp(1.25rem, 3vw, 2.5rem);
+}
+
+.note-article-card {
+  background: linear-gradient(180deg, rgba(252, 247, 241, 0.98) 0%, rgba(255, 252, 247, 0.94) 100%);
 }
 
 .article-header h3 {
@@ -468,9 +503,24 @@ a {
   line-height: 1.08;
 }
 
+.note-article-header h3 {
+  max-width: 16ch;
+}
+
+.note-summary {
+  max-width: 58ch;
+  margin: 0 0 1rem;
+  color: var(--text-soft);
+  line-height: 1.8;
+}
+
 .article-body {
   max-width: 70ch;
   margin-top: 1.5rem;
+}
+
+.note-article-body {
+  max-width: 64ch;
 }
 
 .article-body blockquote {
@@ -537,7 +587,10 @@ a {
 }
 
 .note-entry,
-.project-card {
+.project-card,
+.archive-card {
+  display: grid;
+  gap: 0.45rem;
   padding: 1.3rem;
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
@@ -545,8 +598,34 @@ a {
   box-shadow: var(--shadow-md);
 }
 
+.note-entry:hover,
+.pager-card:hover,
+.archive-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--line-strong);
+}
+
+.note-entry:hover {
+  background: rgba(255, 251, 246, 0.96);
+}
+
+.note-pagination {
+  margin-top: 2rem;
+}
+
+.note-pager-card {
+  background: rgba(250, 244, 237, 0.9);
+}
+
 .projects-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.project-section-block,
+.archive-group,
+.search-results-shell {
+  display: grid;
+  gap: 1rem;
 }
 
 .project-card p {
@@ -555,8 +634,79 @@ a {
 }
 
 .project-links {
-  grid-template-columns: repeat(2, minmax(0, max-content));
+  grid-template-columns: repeat(3, minmax(0, max-content));
   align-items: center;
+}
+
+.detail-links {
+  margin-top: 0.4rem;
+}
+
+.project-detail-head {
+  align-items: start;
+}
+
+.project-article-card {
+  background: linear-gradient(180deg, rgba(247, 238, 228, 0.98) 0%, rgba(255, 251, 246, 0.95) 100%);
+}
+
+.project-article-body {
+  max-width: 72ch;
+}
+
+.tag-hero-row,
+.search-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.tag-archive-layout {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.archive-card {
+  background: rgba(255, 252, 247, 0.9);
+}
+
+.search-form-row {
+  display: grid;
+  grid-template-columns: 1fr max-content;
+  gap: 0.8rem;
+}
+
+.search-label {
+  color: var(--text-soft);
+  font-size: 0.95rem;
+}
+
+.search-input {
+  min-height: 3.2rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: rgba(255, 252, 247, 0.92);
+  color: var(--text);
+  font: inherit;
+}
+
+.search-input:focus {
+  outline: 2px solid rgba(157, 77, 52, 0.18);
+  border-color: var(--line-strong);
+}
+
+.search-empty-card {
+  max-width: 56rem;
+}
+
+.search-result-card mark {
+  padding: 0 0.18rem;
+  border-radius: 0.35rem;
+  background: rgba(219, 181, 120, 0.4);
+  color: inherit;
+}
+
+.search-result-foot {
+  align-items: start;
 }
 
 .about-layout {
@@ -588,7 +738,8 @@ a {
 
   .notes-grid,
   .projects-grid,
-  .article-pagination {
+  .article-pagination,
+  .tag-archive-layout {
     grid-template-columns: 1fr;
   }
 
@@ -623,5 +774,9 @@ a {
 
   .preview-section {
     padding: 1rem;
+  }
+
+  .search-form-row {
+    grid-template-columns: 1fr;
   }
 }
