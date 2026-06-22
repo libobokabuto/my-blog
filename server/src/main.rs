@@ -28,7 +28,7 @@ async fn main() {
     let addr = leptos_options.site_addr;
     let site_root = leptos_options.site_root.to_string();
     let shell_options = leptos_options.clone();
-    let site_url = format!("http://{}", leptos_options.site_addr);
+    let site_url = resolve_site_url(&leptos_options.site_addr.to_string());
 
     let app = Router::new()
         .route(
@@ -99,4 +99,13 @@ async fn sitemap_handler(site_url: String) -> impl IntoResponse {
         )
             .into_response(),
     }
+}
+
+fn resolve_site_url(site_addr: &str) -> String {
+    std::env::var("SITE_URL")
+        .ok()
+        .filter(|value| !value.trim().is_empty())
+        .unwrap_or_else(|| format!("http://{site_addr}"))
+        .trim_end_matches('/')
+        .to_string()
 }

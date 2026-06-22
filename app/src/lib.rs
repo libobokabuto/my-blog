@@ -6,7 +6,7 @@ use content::{
     TagArchive, TagArchiveItem,
 };
 use leptos::prelude::*;
-use leptos_meta::{provide_meta_context, Meta, Stylesheet, Title};
+use leptos_meta::{provide_meta_context, Link, Meta, Stylesheet, Title};
 use leptos_router::{
     components::{Route, Router, Routes, A},
     hooks::{use_params_map, use_query_map},
@@ -15,6 +15,8 @@ use leptos_router::{
 
 #[cfg(feature = "ssr")]
 use leptos::config::LeptosOptions;
+
+const DEFAULT_SITE_URL: &str = "http://127.0.0.1:3000";
 
 #[cfg(feature = "ssr")]
 pub fn shell(options: LeptosOptions) -> impl IntoView {
@@ -68,6 +70,79 @@ pub fn App() -> impl IntoView {
     }
 }
 
+fn configured_site_url() -> String {
+    #[cfg(feature = "ssr")]
+    {
+        std::env::var("SITE_URL")
+            .ok()
+            .filter(|value| !value.trim().is_empty())
+            .unwrap_or_else(|| DEFAULT_SITE_URL.to_string())
+            .trim_end_matches('/')
+            .to_string()
+    }
+
+    #[cfg(not(feature = "ssr"))]
+    {
+        option_env!("SITE_URL")
+            .unwrap_or(DEFAULT_SITE_URL)
+            .trim_end_matches('/')
+            .to_string()
+    }
+}
+
+fn absolute_url(path: &str) -> String {
+    let site_url = configured_site_url();
+
+    match path {
+        "" => site_url,
+        "/" => format!("{site_url}/"),
+        _ if path.starts_with('/') => format!("{site_url}{path}"),
+        _ => format!("{site_url}/{path}"),
+    }
+}
+
+#[component]
+fn PageHeadExtras(
+    title: String,
+    description: String,
+    canonical_path: String,
+    #[prop(optional, into)] page_type: Option<String>,
+    #[prop(optional, into)] robots: Option<String>,
+) -> impl IntoView {
+    let canonical_url = absolute_url(&canonical_path);
+    let page_type = page_type.unwrap_or_else(|| "website".to_string());
+
+    match robots {
+        Some(robots) => view! {
+            <Link rel="canonical" href=canonical_url.clone() />
+            <Meta name="robots" content=robots />
+            <Meta property="og:title" content=title.clone() />
+            <Meta property="og:description" content=description.clone() />
+            <Meta property="og:type" content=page_type />
+            <Meta property="og:url" content=canonical_url />
+            <Meta property="og:site_name" content="Wen's Field Notes" />
+            <Meta property="og:locale" content="zh_CN" />
+            <Meta name="twitter:card" content="summary" />
+            <Meta name="twitter:title" content=title />
+            <Meta name="twitter:description" content=description />
+        }
+        .into_any(),
+        None => view! {
+            <Link rel="canonical" href=canonical_url.clone() />
+            <Meta property="og:title" content=title.clone() />
+            <Meta property="og:description" content=description.clone() />
+            <Meta property="og:type" content=page_type />
+            <Meta property="og:url" content=canonical_url />
+            <Meta property="og:site_name" content="Wen's Field Notes" />
+            <Meta property="og:locale" content="zh_CN" />
+            <Meta name="twitter:card" content="summary" />
+            <Meta name="twitter:title" content=title />
+            <Meta name="twitter:description" content=description />
+        }
+        .into_any(),
+    }
+}
+
 #[component]
 fn SiteHeader() -> impl IntoView {
     view! {
@@ -115,6 +190,11 @@ fn HomePage() -> impl IntoView {
         <Meta
             name="description"
             content="查看这个全栈 Rust 个人内容站的首页，快速了解博客、笔记、项目、搜索与当前阶段目标。"
+        />
+        <PageHeadExtras
+            title="首页 | Wen's Field Notes".to_string()
+            description="查看这个全栈 Rust 个人内容站的首页，快速了解博客、笔记、项目、搜索与当前阶段目标。".to_string()
+            canonical_path="/".to_string()
         />
         <section class="preview-section hero">
             <div class="section-kicker">"首页"</div>
@@ -278,6 +358,11 @@ fn BlogListPage() -> impl IntoView {
             name="description"
             content="按时间与标签浏览博客文章，查看这个个人内容站里已经正式发布的文章。"
         />
+        <PageHeadExtras
+            title="博客 | Wen's Field Notes".to_string()
+            description="按时间与标签浏览博客文章，查看这个个人内容站里已经正式发布的内容。".to_string()
+            canonical_path="/blog".to_string()
+        />
         <section class="preview-section">
             <div class="section-heading">
                 <div>
@@ -419,8 +504,14 @@ fn BlogDetailContent(post: BlogPost) -> impl IntoView {
     let tags = post.tags.clone();
 
     view! {
-        <Title text=title_text />
-        <Meta name="description" content=description_text />
+        <Title text=title_text.clone() />
+        <Meta name="description" content=description_text.clone() />
+        <PageHeadExtras
+            title=title_text.clone()
+            description=description_text.clone()
+            canonical_path=format!("/blog/{}", post.slug)
+            page_type="article".to_string()
+        />
         <section class="preview-section article-preview">
             <div class="section-heading article-head">
                 <div>
@@ -500,6 +591,11 @@ fn NotesPage() -> impl IntoView {
             name="description"
             content="查看这个站点中的学习记录、实验结论与过程型笔记。"
         />
+        <PageHeadExtras
+            title="笔记 | Wen's Field Notes".to_string()
+            description="查看这个站点中的学习记录、实验结论与过程型笔记。".to_string()
+            canonical_path="/notes".to_string()
+        />
         <section class="preview-section">
             <div class="section-heading">
                 <div>
@@ -577,8 +673,14 @@ fn NoteDetailContent(note: NoteEntry) -> impl IntoView {
     let tags = note.tags.clone();
 
     view! {
-        <Title text=title_text />
-        <Meta name="description" content=description_text />
+        <Title text=title_text.clone() />
+        <Meta name="description" content=description_text.clone() />
+        <PageHeadExtras
+            title=title_text.clone()
+            description=description_text.clone()
+            canonical_path=format!("/notes/{}", note.slug)
+            page_type="article".to_string()
+        />
         <section class="preview-section note-detail-shell">
             <div class="section-heading note-detail-head">
                 <div>
@@ -658,6 +760,11 @@ fn ProjectsPage() -> impl IntoView {
         <Meta
             name="description"
             content="浏览这个站点中的项目展示，了解当前在做什么、用什么做、进行到哪一步。"
+        />
+        <PageHeadExtras
+            title="项目 | Wen's Field Notes".to_string()
+            description="浏览这个站点中的项目展示，了解当前在做什么、用什么做、进行到哪一步。".to_string()
+            canonical_path="/projects".to_string()
         />
         <section class="preview-section">
             <div class="section-heading">
@@ -804,8 +911,14 @@ fn ProjectDetailContent(project: ProjectEntry) -> impl IntoView {
     let description_text = project.summary.clone();
 
     view! {
-        <Title text=title_text />
-        <Meta name="description" content=description_text />
+        <Title text=title_text.clone() />
+        <Meta name="description" content=description_text.clone() />
+        <PageHeadExtras
+            title=title_text.clone()
+            description=description_text.clone()
+            canonical_path=format!("/projects/{}", project.slug)
+            page_type="article".to_string()
+        />
         <section class="preview-section project-detail-shell">
             <div class="section-heading project-detail-head">
                 <div>
@@ -900,8 +1013,13 @@ fn TagArchiveContent(archive: TagArchive) -> impl IntoView {
     let notes = archive.notes.clone();
 
     view! {
-        <Title text=title_text />
-        <Meta name="description" content=description_text />
+        <Title text=title_text.clone() />
+        <Meta name="description" content=description_text.clone() />
+        <PageHeadExtras
+            title=title_text.clone()
+            description=description_text.clone()
+            canonical_path=format!("/tags/{}", archive.tag)
+        />
         <section class="preview-section tag-archive-shell">
             <div class="section-heading">
                 <div>
@@ -992,6 +1110,12 @@ fn SearchPage() -> impl IntoView {
             content="在博客、笔记和项目范围内搜索这个站点中的公开内容。"
         />
         <Meta name="robots" content="noindex,follow" />
+        <PageHeadExtras
+            title="搜索 | Wen's Field Notes".to_string()
+            description="在博客、笔记和项目范围内搜索这个站点中的公开内容。".to_string()
+            canonical_path="/search".to_string()
+            robots="noindex,follow".to_string()
+        />
         <section class="preview-section search-shell">
             <div class="section-heading">
                 <div>
@@ -1115,6 +1239,11 @@ fn AboutPage() -> impl IntoView {
             name="description"
             content="了解这个个人内容站为什么存在、当前在做什么，以及它的第二版方向。"
         />
+        <PageHeadExtras
+            title="关于 | Wen's Field Notes".to_string()
+            description="了解这个个人内容站为什么存在、当前在做什么，以及它的第二版方向。".to_string()
+            canonical_path="/about".to_string()
+        />
         <section class="preview-section about-section">
             <div class="section-kicker">"关于"</div>
             <div class="about-layout">
@@ -1149,6 +1278,12 @@ fn AboutPage() -> impl IntoView {
 fn NotFoundPage() -> impl IntoView {
     view! {
         <Title text="404 | Wen's Field Notes" />
+        <PageHeadExtras
+            title="404 | Wen's Field Notes".to_string()
+            description="这个页面还没有被接进当前版本。".to_string()
+            canonical_path="/404".to_string()
+            robots="noindex,follow".to_string()
+        />
         <section class="preview-section">
             <div class="section-kicker">"404"</div>
             <h2>"这个页面还没有被接进当前版本。"</h2>
