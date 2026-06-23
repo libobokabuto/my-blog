@@ -2,6 +2,9 @@
 title: "文档先行会让项目更稳，而不是更慢"
 summary: "先写清当前状态、范围和下一步，反而能避免返工，也更适合现在这个边学边做的节奏。"
 date: 2026-06-19
+stage: 已验证
+source: 项目协作过程
+experiment_state: 稳定结论
 tags:
   - Workflow
   - PRD

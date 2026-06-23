@@ -2,10 +2,14 @@
 title: 把学习文档、产品文档和代码放在同一个仓库之后
 summary: 当需求、设计思路、学习记录和正式实现挨在一起时，项目终于开始有了长期产品的秩序感。
 date: 2026-06-15
+series: building-content-site
+reading_minutes: 4
 tags:
   - Learning
   - Workflow
   - Rust
+related:
+  - why-no-database-yet
 ---
 
 以前我会把“项目代码”“学习笔记”“产品文档”拆得到处都是。短期看上去很清爽，长期却很容易失去上下文。

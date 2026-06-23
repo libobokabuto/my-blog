@@ -2,6 +2,9 @@
 title: "所有权真正开始顺手，是在借用为什么会报错这件事想通之后"
 summary: "不是先背定义，而是先承认编译器拦我的那些瞬间，其实都在保护状态一致性。"
 date: 2026-06-21
+stage: 学习中
+source: Rust 实战调试
+experiment_state: 进行中
 tags:
   - Rust
   - Ownership

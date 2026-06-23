@@ -2,10 +2,14 @@
 title: 第一版博客不该只是功能壳子，而应该从一开始就能公开展示
 summary: 与其先堆功能再回头补气质，不如一开始就把页面结构、内容节奏和站点风格做成值得继续完善的基础。
 date: 2026-06-20
+series: building-content-site
+reading_minutes: 5
 tags:
   - Rust
   - Blog
   - Design
+related:
+  - docs-and-code-in-one-repo
 ---
 
 我后来意识到，所谓“先把功能做出来，样式以后再说”，对长期个人项目往往是一种拖延的变体。它看起来务实，实际上是在把最影响持续投入意愿的部分往后推。

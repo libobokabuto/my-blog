@@ -31,6 +31,7 @@ wasm-bindgen = "0.2.105"
 [[workspace.metadata.leptos]]
 name = "my-blog"
 bin-package = "server"
+bin-target = "server"
 lib-package = "client"
 output-name = "my-blog"
 site-root = "target/site"

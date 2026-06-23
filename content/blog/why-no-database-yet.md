@@ -2,10 +2,14 @@
 title: 为什么第一版不急着上数据库
 summary: 内容站的第一性问题通常不是数据模型多复杂，而是内容如何组织、页面如何呈现、写作和发布路径是否顺畅。
 date: 2026-06-18
+series: building-content-site
+reading_minutes: 4
 tags:
   - Rust
   - Architecture
   - Product
+related:
+  - docs-and-code-in-one-repo
 ---
 
 第一版博客的关键，不是“我能不能很快接一套数据库”，而是“我有没有先把真正要长期维护的链路跑通”。
