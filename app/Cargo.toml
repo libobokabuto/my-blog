@@ -12,7 +12,9 @@ hydrate = ["leptos/hydrate"]
 ssr = [
   "dep:anyhow",
   "dep:pulldown-cmark",
+  "dep:redis",
   "dep:serde_yaml",
+  "dep:sqlx",
   "dep:thiserror",
   "leptos/ssr",
   "leptos_meta/ssr",
@@ -29,5 +31,7 @@ serde.workspace = true
 
 anyhow = { workspace = true, optional = true }
 pulldown-cmark = { workspace = true, optional = true }
+redis = { workspace = true, optional = true }
 serde_yaml = { workspace = true, optional = true }
+sqlx = { workspace = true, optional = true }
 thiserror = { workspace = true, optional = true }

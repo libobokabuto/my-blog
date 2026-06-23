@@ -20,6 +20,7 @@ leptos_router = "0.8.12"
 pulldown-cmark = "0.13.0"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_yaml = "0.9.34"
+sqlx = { version = "0.8.6", features = ["runtime-tokio-rustls", "mysql", "chrono"] }
 thiserror = "2.0.18"
 tokio = { version = "1.51.0", features = ["macros", "rt-multi-thread"] }
 tower = "0.5.2"
@@ -27,6 +28,7 @@ tower-http = { version = "0.6.6", features = ["fs", "trace"] }
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
 wasm-bindgen = "0.2.105"
+redis = { version = "0.32.7", features = ["tokio-comp"] }
 
 [[workspace.metadata.leptos]]
 name = "my-blog"

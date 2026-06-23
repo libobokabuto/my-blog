@@ -2,9 +2,13 @@ pub mod content;
 
 use chrono::NaiveDate;
 use content::{
-    ArchiveOverview, ArchiveYearGroup, BlogPost, BlogPostSummary, HomeActivityItem, HomeOverview,
-    HomeStat, NoteEntry, NoteSummary, ProjectEntry, ProjectSummary, RelatedContentItem,
-    SearchResult, SeriesPage, TagArchive, TagArchiveItem, TagOverviewItem, TagsOverview,
+    AdminContentDetail, AdminContentFact, AdminContentIssue, AdminContentListItem,
+    AdminContentTypeSummary, AdminDashboardOverview, AdminSearchOverview, AdminStatsOverview,
+    AdminSummaryStat, AdminSyncOverview, AdminTasksOverview, ArchiveOverview, ArchiveYearGroup,
+    BlogPost, BlogPostSummary, HomeActivityItem, HomeOverview, HomeStat, MetricSnapshot,
+    NoteBoardSummary, NoteEntry, NoteSummary, ProjectEntry, ProjectSummary, RelatedContentItem,
+    SearchQueryDiagnostic, SearchRebuildRecord, SearchResult, SeriesPage, SyncRunRecord,
+    SyncSourceRecord, TagArchive, TagArchiveItem, TagOverviewItem, TagsOverview, TaskRunRecord,
 };
 use leptos::prelude::*;
 use leptos_meta::{provide_meta_context, Link, Meta, Stylesheet, Title};
@@ -13,6 +17,7 @@ use leptos_router::{
     hooks::{use_params_map, use_query_map},
     path,
 };
+use std::collections::BTreeMap;
 
 #[cfg(feature = "ssr")]
 use leptos::config::LeptosOptions;
@@ -67,6 +72,13 @@ pub fn App() -> impl IntoView {
                         <Route path=path!("/tags/:tag") view=TagArchivePage />
                         <Route path=path!("/archive") view=ArchiveOverviewPage />
                         <Route path=path!("/search") view=SearchPage />
+                        <Route path=path!("/admin") view=AdminDashboardPage />
+                        <Route path=path!("/admin/content") view=AdminContentPage />
+                        <Route path=path!("/admin/content/:id") view=AdminContentDetailPage />
+                        <Route path=path!("/admin/search") view=AdminSearchPage />
+                        <Route path=path!("/admin/stats") view=AdminStatsPage />
+                        <Route path=path!("/admin/tasks") view=AdminTasksPage />
+                        <Route path=path!("/admin/sync") view=AdminSyncPage />
                         <Route path=path!("/about") view=AboutPage />
                     </Routes>
                 </main>
@@ -916,6 +928,7 @@ fn BlogDetailContent(post: BlogPost) -> impl IntoView {
 #[component]
 fn NotesPage() -> impl IntoView {
     let notes = Resource::new_blocking(|| (), |_| async move { list_note_entries().await });
+    let boards = Resource::new_blocking(|| (), |_| async move { get_note_boards_overview().await });
 
     view! {
         <Title text="笔记 | Wen's Field Notes" />
@@ -934,8 +947,17 @@ fn NotesPage() -> impl IntoView {
                     <div class="section-kicker">"笔记"</div>
                     <h2>"笔记比博客更轻、更快，也更接近学习过程本身。"</h2>
                 </div>
-                <p>"这里收集的是短判断、实验结论和阶段记录，不追求每篇都写成完整长文，但现在已经能通过详情页、标签和搜索被更自然地找到。"</p>
+                <p>"这里收集的是短判断、实验结论和阶段记录，不追求每篇都写成完整长文。现在笔记开始按 Rust、C++、Bochs 三个技术板块组织，并保留通用板块承接过程型记录。"</p>
             </div>
+
+            <Suspense fallback=move || view! { <PageLoading label="正在整理笔记板块..." /> }>
+                {move || {
+                    boards.get().map(|boards| match boards {
+                        Ok(boards) => view! { <NotesBoardOverview boards=boards /> }.into_any(),
+                        Err(error) => view! { <PageError message=error.to_string() /> }.into_any(),
+                    })
+                }}
+            </Suspense>
 
             <Suspense fallback=move || view! { <PageLoading label="正在载入笔记..." /> }>
                 {move || {
@@ -950,27 +972,104 @@ fn NotesPage() -> impl IntoView {
 }
 
 #[component]
-fn NotesListContent(notes: Vec<NoteSummary>) -> impl IntoView {
+fn NotesBoardOverview(boards: Vec<NoteBoardSummary>) -> impl IntoView {
     view! {
-        <div class="notes-grid">
-            {notes
+        <div class="entry-card-list notes-board-grid">
+            {boards
                 .into_iter()
-                .map(|note| {
+                .map(|board| {
                     view! {
-                        <A href=format!("/notes/{}", note.slug) attr:class="note-entry">
-                            <p class="blog-meta">
-                                {format!("{} · {}", format_meta_line(&note.date, &note.tags), note.stage)}
-                            </p>
-                            <h3>{note.title}</h3>
-                            <p>{note.summary}</p>
-                            <div class="tag-row compact-tags">
-                                {note
-                                    .tags
-                                    .iter()
-                                    .map(|tag| view! { <span class="chip soft">{tag.clone()}</span> })
-                                    .collect_view()}
+                        <div class="note-card admin-type-card">
+                            <span class="meta-label">{board.label.clone()}</span>
+                            <h3>{format!("{} 篇", board.total_count)}</h3>
+                            <p>{board.description.clone()}</p>
+                            <small class="board-footnote">
+                                {board
+                                    .latest_date
+                                    .map(|date| format!("最近更新：{}", date.format("%Y.%m.%d")))
+                                    .unwrap_or_else(|| "当前还没有内容，后续可以直接往这个板块补笔记。".to_string())}
+                            </small>
+                        </div>
+                    }
+                })
+                .collect_view()}
+        </div>
+    }
+}
+
+#[component]
+fn NotesListContent(notes: Vec<NoteSummary>) -> impl IntoView {
+    let mut grouped = BTreeMap::<String, Vec<NoteSummary>>::new();
+    for note in notes {
+        grouped.entry(note.board.clone()).or_default().push(note);
+    }
+
+    let mut ordered_groups = ["rust", "cpp", "bochs", "general"]
+        .into_iter()
+        .map(|key| {
+            let items = grouped.remove(key).unwrap_or_default();
+            (key.to_string(), items)
+        })
+        .collect::<Vec<_>>();
+    ordered_groups.extend(grouped.into_iter());
+
+    view! {
+        <div class="entry-card-list notes-board-sections">
+            {ordered_groups
+                .into_iter()
+                .map(|(board, items)| {
+                    view! {
+                        <section class="editorial-card admin-block">
+                            <div class="section-heading compact">
+                                <div>
+                                    <div class="section-kicker">"笔记板块"</div>
+                                    <h2>{note_board_label(&board)}</h2>
+                                </div>
+                                <p>{note_board_description(&board)}</p>
                             </div>
-                        </A>
+                            <div class="notes-grid">
+                                {if items.is_empty() {
+                                    view! {
+                                        <div class="note-card">
+                                            <span class="meta-label">{note_board_label(&board)}</span>
+                                            <p>"这个板块已经预留好，后续你可以直接往这里补对应笔记。"</p>
+                                        </div>
+                                    }
+                                        .into_any()
+                                } else {
+                                    view! {
+                                        {items
+                                            .into_iter()
+                                            .map(|note| {
+                                                view! {
+                                                    <A href=format!("/notes/{}", note.slug) attr:class="note-entry">
+                                                        <p class="blog-meta">
+                                                            {format!(
+                                                                "{} · {} · {}",
+                                                                format_meta_line(&note.date, &note.tags),
+                                                                note_board_label(&note.board),
+                                                                note.stage
+                                                            )}
+                                                        </p>
+                                                        <h3>{note.title}</h3>
+                                                        <p>{note.summary}</p>
+                                                        <div class="tag-row compact-tags">
+                                                            <span class="chip soft">{note_board_label(&note.board)}</span>
+                                                            {note
+                                                                .tags
+                                                                .iter()
+                                                                .map(|tag| view! { <span class="chip soft">{tag.clone()}</span> })
+                                                                .collect_view()}
+                                                        </div>
+                                                    </A>
+                                                }
+                                            })
+                                            .collect_view()}
+                                    }
+                                        .into_any()
+                                }}
+                            </div>
+                        </section>
                     }
                 })
                 .collect_view()}
@@ -1035,6 +1134,7 @@ fn NoteDetailContent(note: NoteEntry) -> impl IntoView {
                     <h3>{note.title.clone()}</h3>
                     <p class="note-summary">{note.summary.clone()}</p>
                     <div class="tag-row compact-tags">
+                        <span class="chip soft">{format!("板块：{}", note_board_label(&note.board))}</span>
                         <span class="chip soft">{format!("阶段：{}", note.stage.clone())}</span>
                         <span class="chip soft">{format!("来源：{}", note.source.clone())}</span>
                         <span class="chip soft">{format!("实验状态：{}", note.experiment_state.clone())}</span>
@@ -1985,6 +2085,1101 @@ fn SearchResultCard(result: SearchResult, query: String) -> impl IntoView {
 }
 
 #[component]
+fn AdminDashboardPage() -> impl IntoView {
+    let dashboard = Resource::new_blocking(
+        || (),
+        |_| async move { get_admin_dashboard_overview().await },
+    );
+
+    view! {
+        <Title text="后台概览 | Wen's Field Notes" />
+        <Meta
+            name="description"
+            content="查看第四版内容后台的当前骨架、内容总量、问题摘要与模块入口。"
+        />
+        <Meta name="robots" content="noindex,follow" />
+        <PageHeadExtras
+            title="后台概览 | Wen's Field Notes".to_string()
+            description="查看第四版内容后台的当前骨架、内容总量、问题摘要与模块入口。".to_string()
+            canonical_path="/admin".to_string()
+            robots="noindex,follow".to_string()
+        />
+        <section class="preview-section admin-shell">
+            <div class="section-heading">
+                <div>
+                    <div class="section-kicker">"第四版后台"</div>
+                    <h2>"这里先把内容平台的读模型、治理入口和服务端边界搭起来。"</h2>
+                </div>
+                <p>"这一批不直接假装已经有数据库，而是先把第三版内容系统组织成可演进的后台骨架。"</p>
+            </div>
+
+            <div class="tag-row">
+                <A href="/admin/content" attr:class="chip active">"内容后台"</A>
+                <A href="/admin/search" attr:class="chip active">"搜索索引"</A>
+                <A href="/admin/stats" attr:class="chip soft">"统计快照"</A>
+                <A href="/admin/tasks" attr:class="chip soft">"任务记录"</A>
+                <A href="/admin/sync" attr:class="chip soft">"同步边界"</A>
+            </div>
+
+            <Suspense fallback=move || view! { <PageLoading label="正在加载后台概览..." /> }>
+                {move || {
+                    dashboard.get().map(|result| match result {
+                        Ok(overview) => view! { <AdminDashboardContent overview=overview /> }.into_any(),
+                        Err(error) => view! { <PageError message=error.to_string() /> }.into_any(),
+                    })
+                }}
+            </Suspense>
+        </section>
+    }
+}
+
+#[component]
+fn AdminDashboardContent(overview: AdminDashboardOverview) -> impl IntoView {
+    view! {
+        <div class="admin-grid">
+            <div class="entry-card-list stats-grid">
+                {overview
+                    .stats
+                    .into_iter()
+                    .map(|stat| view! { <AdminStatCard stat=stat /> })
+                    .collect_view()}
+            </div>
+
+            <div class="editorial-card admin-block">
+                <div>
+                    <span class="meta-label">"内容类型"</span>
+                    <h3>"当前后台统一视图覆盖三类内容。"</h3>
+                </div>
+                <div class="entry-card-list">
+                    {overview
+                        .content_types
+                        .into_iter()
+                        .map(|item| view! { <AdminTypeSummaryCard item=item /> })
+                        .collect_view()}
+                </div>
+            </div>
+
+            <div class="editorial-card admin-block">
+                <div>
+                    <span class="meta-label">"最近内容"</span>
+                    <h3>"后台优先关心最近变动和问题密度。"</h3>
+                </div>
+                <div class="entry-card-list">
+                    {overview
+                        .recent_items
+                        .into_iter()
+                        .map(|item| view! { <AdminContentRow item=item /> })
+                        .collect_view()}
+                </div>
+            </div>
+
+            <div class="editorial-card admin-block">
+                <div>
+                    <span class="meta-label">"衔接说明"</span>
+                    <h3>"第四版第一步先搭桥，不提前越界到完整平台。"</h3>
+                </div>
+                <ul class="admin-notes-list">
+                    {overview
+                        .bridge_notes
+                        .into_iter()
+                        .map(|note| view! { <li>{note}</li> })
+                        .collect_view()}
+                </ul>
+            </div>
+        </div>
+    }
+}
+
+#[component]
+fn AdminStatCard(stat: AdminSummaryStat) -> impl IntoView {
+    view! {
+        <A href=stat.href attr:class="note-card warm admin-stat-card">
+            <span class="meta-label">{stat.label}</span>
+            <h3>{stat.value}</h3>
+            <p>{stat.detail}</p>
+        </A>
+    }
+}
+
+#[component]
+fn AdminTypeSummaryCard(item: AdminContentTypeSummary) -> impl IntoView {
+    view! {
+        <div class="note-card admin-type-card">
+            <span class="meta-label">{item.content_type.clone()}</span>
+            <h3>{format!("{} 条", item.total_count)}</h3>
+            <p>{format!("已发布 {} · 问题项 {}", item.published_count, item.issue_count)}</p>
+        </div>
+    }
+}
+
+#[component]
+fn AdminContentPage() -> impl IntoView {
+    let query_map = use_query_map();
+    let query = Memo::new(move |_| query_map.with(|map| map.get("q").unwrap_or_default()));
+    let type_filter = Memo::new(move |_| query_map.with(|map| map.get("type").unwrap_or_default()));
+    let status_filter =
+        Memo::new(move |_| query_map.with(|map| map.get("status").unwrap_or_default()));
+    let content_items = Resource::new(
+        move || (query.get(), type_filter.get(), status_filter.get()),
+        |(current_query, current_type, current_status)| async move {
+            list_admin_content(
+                current_query.clone(),
+                current_type.clone(),
+                current_status.clone(),
+            )
+            .await
+            .map(|items| (current_query, current_type, current_status, items))
+        },
+    );
+
+    view! {
+        <Title text="内容后台 | Wen's Field Notes" />
+        <Meta
+            name="description"
+            content="查看第四版统一内容后台列表、筛选条件、来源路径和问题摘要。"
+        />
+        <Meta name="robots" content="noindex,follow" />
+        <PageHeadExtras
+            title="内容后台 | Wen's Field Notes".to_string()
+            description="查看第四版统一内容后台列表、筛选条件、来源路径和问题摘要。".to_string()
+            canonical_path="/admin/content".to_string()
+            robots="noindex,follow".to_string()
+        />
+        <section class="preview-section admin-shell">
+            <div class="section-heading">
+                <div>
+                    <div class="section-kicker">"内容后台"</div>
+                    <h2>"这里先把 blog / notes / projects 拉到同一张后台视图里。"</h2>
+                </div>
+                <p>"当前列表已经是服务端聚合结果，不再依赖前端自己拼接三类内容。"</p>
+            </div>
+
+            <AdminContentFilterForm
+                query=query.get_untracked()
+                type_filter=type_filter.get_untracked()
+                status_filter=status_filter.get_untracked()
+            />
+
+            <Suspense fallback=move || view! { <PageLoading label="正在加载内容后台..." /> }>
+                {move || {
+                    content_items.get().map(|result| match result {
+                        Ok((current_query, current_type, current_status, items)) => {
+                            view! {
+                                <AdminContentListContent
+                                    query=current_query
+                                    type_filter=current_type
+                                    status_filter=current_status
+                                    items=items
+                                />
+                            }
+                                .into_any()
+                        }
+                        Err(error) => view! { <PageError message=error.to_string() /> }.into_any(),
+                    })
+                }}
+            </Suspense>
+        </section>
+    }
+}
+
+#[component]
+fn AdminContentFilterForm(
+    query: String,
+    type_filter: String,
+    status_filter: String,
+) -> impl IntoView {
+    view! {
+        <form action="/admin/content" method="get" class="search-form admin-filter-form">
+            <label class="search-label" for="admin-q">
+                "按标题、摘要、slug、标签或来源路径搜索"
+            </label>
+            <div class="search-form-row">
+                <input
+                    id="admin-q"
+                    class="search-input"
+                    type="search"
+                    name="q"
+                    value=query
+                    placeholder="例如：Rust、Leptos、building-content-site、content/blog"
+                />
+                <button type="submit" class="button primary">"筛选内容"</button>
+            </div>
+            <div class="search-filter-row">
+                <label class="search-label">
+                    "类型"
+                    <select name="type" class="search-input search-select">
+                        <option value="" selected={type_filter.is_empty()}>"全部"</option>
+                        <option value="blog" selected={type_filter == "blog"}>"博客"</option>
+                        <option value="notes" selected={type_filter == "notes"}>"笔记"</option>
+                        <option value="projects" selected={type_filter == "projects"}>"项目"</option>
+                    </select>
+                </label>
+                <label class="search-label">
+                    "状态"
+                    <select name="status" class="search-input search-select">
+                        <option value="" selected={status_filter.is_empty()}>"全部"</option>
+                        <option value="published" selected={status_filter == "published"}>"published"</option>
+                    </select>
+                </label>
+            </div>
+        </form>
+    }
+}
+
+#[component]
+fn AdminContentListContent(
+    query: String,
+    type_filter: String,
+    status_filter: String,
+    items: Vec<AdminContentListItem>,
+) -> impl IntoView {
+    view! {
+        <div class="entry-card-list admin-list-shell">
+            <div class="panel-head">
+                <span class="meta-label">
+                    {format!(
+                        "query={} · type={} · status={}",
+                        if query.trim().is_empty() { "全部".to_string() } else { query.clone() },
+                        if type_filter.trim().is_empty() { "全部".to_string() } else { type_filter.clone() },
+                        if status_filter.trim().is_empty() { "全部".to_string() } else { status_filter.clone() }
+                    )}
+                </span>
+                <span>{format!("共 {} 条内容", items.len())}</span>
+            </div>
+
+            {if items.is_empty() {
+                view! {
+                    <div class="loading-card search-empty-card">
+                        <span class="meta-label">"没有结果"</span>
+                        <p>"当前筛选条件下没有命中内容。可以放宽关键词，或者切回全部类型。"</p>
+                    </div>
+                }
+                    .into_any()
+            } else {
+                view! {
+                    <div class="entry-card-list">
+                        {items
+                            .into_iter()
+                            .map(|item| view! { <AdminContentRow item=item /> })
+                            .collect_view()}
+                    </div>
+                }
+                    .into_any()
+            }}
+        </div>
+    }
+}
+
+#[component]
+fn AdminContentRow(item: AdminContentListItem) -> impl IntoView {
+    view! {
+        <A href=item.admin_href.clone() attr:class="archive-card admin-content-card">
+            <div class="panel-head">
+                <p class="blog-meta">
+                    {format!(
+                        "{} · {} · {}",
+                        item.content_type,
+                        item.status_label,
+                        item.date
+                            .map(|date| date.format("%Y-%m-%d").to_string())
+                            .unwrap_or_else(|| "无日期".to_string())
+                    )}
+                </p>
+                <span class="meta-label">{format!("问题项 {}", item.issue_count)}</span>
+            </div>
+            <h3>{item.title.clone()}</h3>
+            <p>{item.summary.clone()}</p>
+            <div class="entry-card-list admin-content-facts">
+                <span class="chip soft">{format!("slug: {}", item.slug)}</span>
+                <span class="chip soft">{item.primary_context.clone()}</span>
+                <span class="chip soft">{item.source_path.clone()}</span>
+            </div>
+            <div class="panel-head search-result-foot">
+                <div class="tag-row compact-tags">
+                    {item
+                        .tags
+                        .into_iter()
+                        .map(|tag| view! { <span class="chip soft">{tag}</span> })
+                        .collect_view()}
+                </div>
+                <span class="meta-label">{format!("关联 {} 项", item.related_count)}</span>
+            </div>
+        </A>
+    }
+}
+
+#[component]
+fn AdminContentDetailPage() -> impl IntoView {
+    let params = use_params_map();
+    let id = Memo::new(move |_| params.with(|map| map.get("id").unwrap_or_default()));
+    let detail = Resource::new_blocking(
+        move || id.get(),
+        |current_id| async move { get_admin_content_detail(current_id).await },
+    );
+
+    view! {
+        <Title text="内容详情 | Wen's Field Notes" />
+        <Meta
+            name="description"
+            content="查看第四版后台中的单条内容详情、衔接说明、关联项与问题摘要。"
+        />
+        <Meta name="robots" content="noindex,follow" />
+        <PageHeadExtras
+            title="内容详情 | Wen's Field Notes".to_string()
+            description="查看第四版后台中的单条内容详情、衔接说明、关联项与问题摘要。".to_string()
+            canonical_path="/admin/content".to_string()
+            robots="noindex,follow".to_string()
+        />
+        <section class="preview-section admin-shell">
+            <div class="section-heading">
+                <div>
+                    <div class="section-kicker">"内容详情"</div>
+                    <h2>"单条内容先提供治理视图，再决定后续是否进入正式写入流。"</h2>
+                </div>
+                <p>"这个详情页现在重点是数据边界、来源、关联和问题摘要，不是在线编辑器。"</p>
+            </div>
+
+            <div class="tag-row">
+                <A href="/admin" attr:class="chip soft">"返回后台概览"</A>
+                <A href="/admin/content" attr:class="chip soft">"返回内容列表"</A>
+            </div>
+
+            <Suspense fallback=move || view! { <PageLoading label="正在加载内容详情..." /> }>
+                {move || {
+                    detail.get().map(|result| match result {
+                        Ok(detail) => view! { <AdminContentDetailContent detail=detail /> }.into_any(),
+                        Err(error) => view! { <PageError message=error.to_string() /> }.into_any(),
+                    })
+                }}
+            </Suspense>
+        </section>
+    }
+}
+
+#[component]
+fn AdminContentDetailContent(detail: AdminContentDetail) -> impl IntoView {
+    let item = detail.item.clone();
+
+    view! {
+        <div class="admin-grid">
+            <div class="editorial-card admin-block">
+                <div class="panel-head">
+                    <div>
+                        <span class="meta-label">{format!("{} · {}", item.content_type, item.status_label)}</span>
+                        <h3>{item.title.clone()}</h3>
+                    </div>
+                    <A href=item.public_href.clone() attr:class="button ghost">"查看公开页"</A>
+                </div>
+                <p>{item.summary.clone()}</p>
+                <div class="entry-card-list admin-facts-grid">
+                    {detail
+                        .facts
+                        .into_iter()
+                        .map(|fact| view! { <AdminFactCard fact=fact /> })
+                        .collect_view()}
+                </div>
+            </div>
+
+            <div class="editorial-card admin-block">
+                <div>
+                    <span class="meta-label">"问题摘要"</span>
+                    <h3>"这一层先告诉我们哪里还需要治理，而不是直接触发审核流。"</h3>
+                </div>
+                {if detail.issues.is_empty() {
+                    view! {
+                        <div class="note-card">
+                            <span class="meta-label">"当前无问题"</span>
+                            <p>"按照当前后台规则，这条内容没有额外提示项。"</p>
+                        </div>
+                    }
+                        .into_any()
+                } else {
+                    view! {
+                        <div class="entry-card-list">
+                            {detail
+                                .issues
+                                .into_iter()
+                                .map(|issue| view! { <AdminIssueCard issue=issue /> })
+                                .collect_view()}
+                        </div>
+                    }
+                        .into_any()
+                }}
+            </div>
+
+            <div class="editorial-card admin-block">
+                <div>
+                    <span class="meta-label">"关联内容"</span>
+                    <h3>"这里沿用第三版已有的关联逻辑，第四版先把它收进后台视图。"</h3>
+                </div>
+                {if detail.related.is_empty() {
+                    view! {
+                        <div class="note-card">
+                            <span class="meta-label">"暂无关联"</span>
+                            <p>"当前没有可展示的关联项。"</p>
+                        </div>
+                    }
+                        .into_any()
+                } else {
+                    view! {
+                        <div class="archive-card-list">
+                            {detail
+                                .related
+                                .into_iter()
+                                .map(|related| {
+                                    view! {
+                                        <A href=related.href.clone() attr:class="archive-card related-card">
+                                            <p class="blog-meta">{format!("{} · {}", related.content_type, related.context)}</p>
+                                            <h3>{related.title}</h3>
+                                            <p>{related.summary}</p>
+                                            <span class="meta-label">{related.reason}</span>
+                                        </A>
+                                    }
+                                })
+                                .collect_view()}
+                        </div>
+                    }
+                        .into_any()
+                }}
+            </div>
+
+            <div class="editorial-card admin-block">
+                <div>
+                    <span class="meta-label">"衔接说明"</span>
+                    <h3>"这几条说明用来保护第四版边界。"</h3>
+                </div>
+                <ul class="admin-notes-list">
+                    {detail
+                        .bridge_notes
+                        .into_iter()
+                        .map(|note| view! { <li>{note}</li> })
+                        .collect_view()}
+                </ul>
+            </div>
+        </div>
+    }
+}
+
+#[component]
+fn AdminFactCard(fact: AdminContentFact) -> impl IntoView {
+    view! {
+        <div class="note-card admin-fact-card">
+            <span class="meta-label">{fact.label}</span>
+            <p>{fact.value}</p>
+        </div>
+    }
+}
+
+#[component]
+fn AdminIssueCard(issue: AdminContentIssue) -> impl IntoView {
+    view! {
+        <div class="note-card admin-issue-card">
+            <span class="meta-label">{format!("{} · {}", issue.severity_label, issue.code)}</span>
+            <p>{issue.message}</p>
+        </div>
+    }
+}
+
+#[component]
+fn AdminSearchPage() -> impl IntoView {
+    let query_map = use_query_map();
+    let sample_query =
+        Memo::new(move |_| query_map.with(|map| map.get("sample").unwrap_or_default()));
+    let rebuild_token =
+        Memo::new(move |_| query_map.with(|map| map.get("rebuild").unwrap_or_default()));
+    let rebuild_result = Resource::new(
+        move || rebuild_token.get(),
+        |token| async move {
+            if token.trim().is_empty() {
+                Ok(None)
+            } else {
+                rebuild_search_index("manual-admin".to_string())
+                    .await
+                    .map(Some)
+            }
+        },
+    );
+    let overview = Resource::new(
+        move || (sample_query.get(), rebuild_token.get()),
+        |(sample, _token)| async move { get_admin_search_overview(sample).await },
+    );
+
+    view! {
+        <Title text="搜索后台 | Wen's Field Notes" />
+        <Meta
+            name="description"
+            content="查看第四版搜索索引状态、重建记录、运行态依赖与查询诊断。"
+        />
+        <Meta name="robots" content="noindex,follow" />
+        <PageHeadExtras
+            title="搜索后台 | Wen's Field Notes".to_string()
+            description="查看第四版搜索索引状态、重建记录、运行态依赖与查询诊断。".to_string()
+            canonical_path="/admin/search".to_string()
+            robots="noindex,follow".to_string()
+        />
+        <section class="preview-section admin-shell">
+            <div class="section-heading">
+                <div>
+                    <div class="section-kicker">"搜索后台"</div>
+                    <h2>"第四版第二项先把搜索从页面能力，推进成正式索引基础设施。"</h2>
+                </div>
+                <p>"这里会直接告诉我们 MySQL 和 Redis 是否可用、索引有没有落库、最近一次重建发生了什么。"</p>
+            </div>
+
+            <form action="/admin/search" method="get" class="search-form admin-filter-form">
+                <label class="search-label" for="search-sample">
+                    "示例查询"
+                </label>
+                <div class="search-form-row">
+                    <input
+                        id="search-sample"
+                        class="search-input"
+                        type="search"
+                        name="sample"
+                        value=sample_query.get_untracked()
+                        placeholder="例如：Rust、PRD、Leptos"
+                    />
+                    <button type="submit" class="button primary">"刷新诊断"</button>
+                </div>
+                <div class="tag-row">
+                    <A href="/admin" attr:class="chip soft">"返回后台概览"</A>
+                    <A href="/admin/content" attr:class="chip soft">"返回内容后台"</A>
+                    <a href=format!("/admin/search?sample={}&rebuild={}", sample_query.get_untracked(), chrono::Utc::now().timestamp()) class="chip active">"执行一次重建"</a>
+                </div>
+            </form>
+
+            <Suspense fallback=move || view! { <PageLoading label="正在检查搜索基础设施..." /> }>
+                {move || {
+                    overview.get().map(|result| match result {
+                        Ok(overview) => {
+                            let rebuild_feedback = rebuild_result
+                                .get()
+                                .and_then(|value| value.ok().flatten());
+                            view! {
+                                <AdminSearchContent overview=overview rebuild_feedback=rebuild_feedback />
+                            }
+                                .into_any()
+                        }
+                        Err(error) => view! { <PageError message=error.to_string() /> }.into_any(),
+                    })
+                }}
+            </Suspense>
+        </section>
+    }
+}
+
+#[component]
+fn AdminSearchContent(
+    overview: AdminSearchOverview,
+    rebuild_feedback: Option<SearchRebuildRecord>,
+) -> impl IntoView {
+    view! {
+        <div class="admin-grid">
+            {rebuild_feedback
+                .map(|record| {
+                    view! {
+                        <div class="note-card warm admin-block">
+                            <span class="meta-label">"最近一次手动重建"</span>
+                            <h3>{format!("{} · {} 条", record.status, record.document_count)}</h3>
+                            <p>{record.message}</p>
+                        </div>
+                    }
+                })}
+
+            <div class="entry-card-list stats-grid">
+                {overview
+                    .stats
+                    .into_iter()
+                    .map(|stat| view! { <AdminStatCard stat=stat /> })
+                    .collect_view()}
+            </div>
+
+            <div class="editorial-card admin-block">
+                <div>
+                    <span class="meta-label">"重建记录"</span>
+                    <h3>"先让索引重建可见，再进入任务系统。"</h3>
+                </div>
+                {if overview.rebuild_records.is_empty() {
+                    view! {
+                        <div class="note-card">
+                            <span class="meta-label">"暂无记录"</span>
+                            <p>"当前还没有持久化重建记录。通常是 MySQL 尚未连通，或者还没有执行过重建。"</p>
+                        </div>
+                    }
+                        .into_any()
+                } else {
+                    view! {
+                        <div class="entry-card-list">
+                            {overview
+                                .rebuild_records
+                                .into_iter()
+                                .map(|record| view! { <SearchRebuildRecordCard record=record /> })
+                                .collect_view()}
+                        </div>
+                    }
+                        .into_any()
+                }}
+            </div>
+
+            <div class="editorial-card admin-block">
+                <div>
+                    <span class="meta-label">"查询诊断"</span>
+                    <h3>"同一个查询，当前到底是落到持久化索引还是实时回退。"</h3>
+                </div>
+                <div class="entry-card-list">
+                    {overview
+                        .diagnostics
+                        .into_iter()
+                        .map(|diagnostic| view! { <SearchDiagnosticCard diagnostic=diagnostic /> })
+                        .collect_view()}
+                </div>
+            </div>
+
+            <div class="editorial-card admin-block">
+                <div>
+                    <span class="meta-label">"覆盖说明"</span>
+                    <h3>"这一层明确告诉我们第四版索引现在到底覆盖到了哪里。"</h3>
+                </div>
+                <ul class="admin-notes-list">
+                    {overview
+                        .coverage_notes
+                        .into_iter()
+                        .map(|note| view! { <li>{note}</li> })
+                        .collect_view()}
+                </ul>
+            </div>
+        </div>
+    }
+}
+
+#[component]
+fn SearchRebuildRecordCard(record: SearchRebuildRecord) -> impl IntoView {
+    view! {
+        <div class="note-card admin-fact-card">
+            <span class="meta-label">{format!("{} · {}", record.status, record.trigger)}</span>
+            <p>{record.message.clone()}</p>
+            <small class="board-footnote">
+                {format!("开始：{} · 完成：{} · 文档数：{}", record.started_at, record.finished_at.unwrap_or_else(|| "未完成".to_string()), record.document_count)}
+            </small>
+        </div>
+    }
+}
+
+#[component]
+fn SearchDiagnosticCard(diagnostic: SearchQueryDiagnostic) -> impl IntoView {
+    view! {
+        <div class="note-card admin-block">
+            <span class="meta-label">{format!("{} · {} 条结果", diagnostic.mode, diagnostic.result_count)}</span>
+            <h3>{format!("示例查询：{}", diagnostic.query)}</h3>
+            <div class="entry-card-list">
+                {diagnostic
+                    .top_results
+                    .into_iter()
+                    .map(|result| {
+                        view! {
+                            <A href=result.href.clone() attr:class="archive-card search-result-card">
+                                <p class="blog-meta">{format!("{} · {}", result.content_type, result.context)}</p>
+                                <h3>{result.title}</h3>
+                                <p>{result.summary}</p>
+                                <span class="meta-label">{result.match_hint}</span>
+                            </A>
+                        }
+                    })
+                    .collect_view()}
+            </div>
+        </div>
+    }
+}
+
+#[component]
+fn AdminStatsPage() -> impl IntoView {
+    let overview =
+        Resource::new_blocking(|| (), |_| async move { get_admin_stats_overview().await });
+
+    view! {
+        <Title text="统计后台 | Wen's Field Notes" />
+        <Meta
+            name="description"
+            content="查看第四版统计快照、治理指标与持久化统计骨架。"
+        />
+        <Meta name="robots" content="noindex,follow" />
+        <PageHeadExtras
+            title="统计后台 | Wen's Field Notes".to_string()
+            description="查看第四版统计快照、治理指标与持久化统计骨架。".to_string()
+            canonical_path="/admin/stats".to_string()
+            robots="noindex,follow".to_string()
+        />
+        <section class="preview-section admin-shell">
+            <div class="section-heading">
+                <div>
+                    <div class="section-kicker">"统计后台"</div>
+                    <h2>"第四版第三项先把内容治理指标落到 MySQL，再谈公开数据看板。"</h2>
+                </div>
+                <p>"这里的统计当前偏内部运营视角，先服务内容后台、任务系统和同步边界。"</p>
+            </div>
+
+            <div class="tag-row">
+                <A href="/admin" attr:class="chip soft">"后台概览"</A>
+                <A href="/admin/tasks" attr:class="chip soft">"任务记录"</A>
+                <A href="/admin/sync" attr:class="chip soft">"同步边界"</A>
+            </div>
+
+            <Suspense fallback=move || view! { <PageLoading label="正在加载统计快照..." /> }>
+                {move || {
+                    overview.get().map(|result| match result {
+                        Ok(overview) => view! { <AdminStatsContent overview=overview /> }.into_any(),
+                        Err(error) => view! { <PageError message=error.to_string() /> }.into_any(),
+                    })
+                }}
+            </Suspense>
+        </section>
+    }
+}
+
+#[component]
+fn AdminStatsContent(overview: AdminStatsOverview) -> impl IntoView {
+    view! {
+        <div class="admin-grid">
+            <div class="entry-card-list stats-grid">
+                {overview
+                    .stats
+                    .into_iter()
+                    .map(|stat| view! { <AdminStatCard stat=stat /> })
+                    .collect_view()}
+            </div>
+
+            <div class="editorial-card admin-block">
+                <div>
+                    <span class="meta-label">"统计快照"</span>
+                    <h3>"这里先持久化当前状态，而不是做复杂时间序列分析。"</h3>
+                </div>
+                <div class="entry-card-list">
+                    {overview
+                        .snapshots
+                        .into_iter()
+                        .map(|snapshot| view! { <MetricSnapshotCard snapshot=snapshot /> })
+                        .collect_view()}
+                </div>
+            </div>
+
+            <div class="editorial-card admin-block">
+                <div>
+                    <span class="meta-label">"范围说明"</span>
+                    <h3>"这一层还在第四版边界内，没有越界成完整 BI 系统。"</h3>
+                </div>
+                <ul class="admin-notes-list">
+                    {overview
+                        .notes
+                        .into_iter()
+                        .map(|note| view! { <li>{note}</li> })
+                        .collect_view()}
+                </ul>
+            </div>
+        </div>
+    }
+}
+
+#[component]
+fn MetricSnapshotCard(snapshot: MetricSnapshot) -> impl IntoView {
+    view! {
+        <div class="note-card admin-fact-card">
+            <span class="meta-label">{snapshot.metric_key}</span>
+            <h3>{snapshot.metric_value}</h3>
+            <p>{snapshot.detail}</p>
+            <small class="board-footnote">{format!("更新时间：{}", snapshot.captured_at)}</small>
+        </div>
+    }
+}
+
+#[component]
+fn AdminTasksPage() -> impl IntoView {
+    let overview =
+        Resource::new_blocking(|| (), |_| async move { get_admin_tasks_overview().await });
+
+    view! {
+        <Title text="任务后台 | Wen's Field Notes" />
+        <Meta
+            name="description"
+            content="查看第四版任务记录、重建动作和服务端任务骨架。"
+        />
+        <Meta name="robots" content="noindex,follow" />
+        <PageHeadExtras
+            title="任务后台 | Wen's Field Notes".to_string()
+            description="查看第四版任务记录、重建动作和服务端任务骨架。".to_string()
+            canonical_path="/admin/tasks".to_string()
+            robots="noindex,follow".to_string()
+        />
+        <section class="preview-section admin-shell">
+            <div class="section-heading">
+                <div>
+                    <div class="section-kicker">"任务后台"</div>
+                    <h2>"先把搜索重建、同步运行这些动作变成正式记录。"</h2>
+                </div>
+                <p>"第四版当前仍然是应用内触发任务，不引入独立 worker 和复杂编排。"</p>
+            </div>
+
+            <div class="tag-row">
+                <A href="/admin/search" attr:class="chip soft">"搜索索引"</A>
+                <A href="/admin/stats" attr:class="chip soft">"统计快照"</A>
+                <A href="/admin/sync" attr:class="chip soft">"同步边界"</A>
+            </div>
+
+            <Suspense fallback=move || view! { <PageLoading label="正在加载任务记录..." /> }>
+                {move || {
+                    overview.get().map(|result| match result {
+                        Ok(overview) => view! { <AdminTasksContent overview=overview /> }.into_any(),
+                        Err(error) => view! { <PageError message=error.to_string() /> }.into_any(),
+                    })
+                }}
+            </Suspense>
+        </section>
+    }
+}
+
+#[component]
+fn AdminTasksContent(overview: AdminTasksOverview) -> impl IntoView {
+    view! {
+        <div class="admin-grid">
+            <div class="entry-card-list stats-grid">
+                {overview
+                    .stats
+                    .into_iter()
+                    .map(|stat| view! { <AdminStatCard stat=stat /> })
+                    .collect_view()}
+            </div>
+
+            <div class="editorial-card admin-block">
+                <div>
+                    <span class="meta-label">"任务记录"</span>
+                    <h3>"统一任务表先收拢后台动作，再决定是否拆 worker。"</h3>
+                </div>
+                <div class="entry-card-list">
+                    {overview
+                        .tasks
+                        .into_iter()
+                        .map(|task| view! { <TaskRunCard task=task /> })
+                        .collect_view()}
+                </div>
+            </div>
+
+            <div class="editorial-card admin-block">
+                <div>
+                    <span class="meta-label">"范围说明"</span>
+                    <h3>"这里的任务系统还是轻量骨架。"</h3>
+                </div>
+                <ul class="admin-notes-list">
+                    {overview
+                        .notes
+                        .into_iter()
+                        .map(|note| view! { <li>{note}</li> })
+                        .collect_view()}
+                </ul>
+            </div>
+        </div>
+    }
+}
+
+#[component]
+fn TaskRunCard(task: TaskRunRecord) -> impl IntoView {
+    view! {
+        <div class="note-card admin-fact-card">
+            <span class="meta-label">{format!("{} · {}", task.task_type, task.status)}</span>
+            <h3>{task.summary}</h3>
+            <small class="board-footnote">
+                {format!(
+                    "触发：{} · 开始：{} · 完成：{}",
+                    task.trigger,
+                    task.started_at,
+                    task.finished_at.unwrap_or_else(|| "未完成".to_string())
+                )}
+            </small>
+        </div>
+    }
+}
+
+#[component]
+fn AdminSyncPage() -> impl IntoView {
+    let query_map = use_query_map();
+    let source_key =
+        Memo::new(move |_| query_map.with(|map| map.get("source").unwrap_or_default()));
+    let run_token = Memo::new(move |_| query_map.with(|map| map.get("run").unwrap_or_default()));
+    let run_result = Resource::new(
+        move || (source_key.get(), run_token.get()),
+        |(source, token)| async move {
+            if source.trim().is_empty() || token.trim().is_empty() {
+                Ok(None)
+            } else {
+                run_sync_source(source, "manual-admin".to_string())
+                    .await
+                    .map(Some)
+            }
+        },
+    );
+    let overview = Resource::new(
+        move || (source_key.get(), run_token.get()),
+        |_| async move { get_admin_sync_overview().await },
+    );
+
+    view! {
+        <Title text="同步后台 | Wen's Field Notes" />
+        <Meta
+            name="description"
+            content="查看第四版外部同步边界、同步源与运行记录骨架。"
+        />
+        <Meta name="robots" content="noindex,follow" />
+        <PageHeadExtras
+            title="同步后台 | Wen's Field Notes".to_string()
+            description="查看第四版外部同步边界、同步源与运行记录骨架。".to_string()
+            canonical_path="/admin/sync".to_string()
+            robots="noindex,follow".to_string()
+        />
+        <section class="preview-section admin-shell">
+            <div class="section-heading">
+                <div>
+                    <div class="section-kicker">"同步后台"</div>
+                    <h2>"第四版先确定同步边界、同步源和任务记录，不直接做开放平台。"</h2>
+                </div>
+                <p>"这里当前展示的是可演进骨架，重点是边界清晰，而不是完整第三方集成。"</p>
+            </div>
+
+            <div class="tag-row">
+                <A href="/admin/search" attr:class="chip soft">"搜索索引"</A>
+                <A href="/admin/tasks" attr:class="chip soft">"任务记录"</A>
+                <A href="/admin/stats" attr:class="chip soft">"统计快照"</A>
+            </div>
+
+            <Suspense fallback=move || view! { <PageLoading label="正在加载同步边界..." /> }>
+                {move || {
+                    overview.get().map(|result| match result {
+                        Ok(overview) => {
+                            let run_feedback = run_result.get().and_then(|value| value.ok().flatten());
+                            view! { <AdminSyncContent overview=overview run_feedback=run_feedback /> }.into_any()
+                        }
+                        Err(error) => view! { <PageError message=error.to_string() /> }.into_any(),
+                    })
+                }}
+            </Suspense>
+        </section>
+    }
+}
+
+#[component]
+fn AdminSyncContent(
+    overview: AdminSyncOverview,
+    run_feedback: Option<SyncRunRecord>,
+) -> impl IntoView {
+    view! {
+        <div class="admin-grid">
+            {run_feedback
+                .map(|run| {
+                    view! {
+                        <div class="note-card warm admin-block">
+                            <span class="meta-label">"最近一次手动同步"</span>
+                            <h3>{format!("{} · {}", run.source_key, run.status)}</h3>
+                            <p>{run.summary}</p>
+                        </div>
+                    }
+                })}
+
+            <div class="entry-card-list stats-grid">
+                {overview
+                    .stats
+                    .into_iter()
+                    .map(|stat| view! { <AdminStatCard stat=stat /> })
+                    .collect_view()}
+            </div>
+
+            <div class="editorial-card admin-block">
+                <div>
+                    <span class="meta-label">"同步源"</span>
+                    <h3>"每个同步源都先成为可解释、可记录的正式边界。"</h3>
+                </div>
+                <div class="entry-card-list">
+                    {overview
+                        .sources
+                        .into_iter()
+                        .map(|source| view! { <SyncSourceCard source=source /> })
+                        .collect_view()}
+                </div>
+            </div>
+
+            <div class="editorial-card admin-block">
+                <div>
+                    <span class="meta-label">"同步记录"</span>
+                    <h3>"先看到运行结果，再决定未来是否需要真正异步化。"</h3>
+                </div>
+                <div class="entry-card-list">
+                    {overview
+                        .runs
+                        .into_iter()
+                        .map(|run| view! { <SyncRunCard run=run /> })
+                        .collect_view()}
+                </div>
+            </div>
+
+            <div class="editorial-card admin-block">
+                <div>
+                    <span class="meta-label">"范围说明"</span>
+                    <h3>"这一层故意停在第四版边界内。"</h3>
+                </div>
+                <ul class="admin-notes-list">
+                    {overview
+                        .notes
+                        .into_iter()
+                        .map(|note| view! { <li>{note}</li> })
+                        .collect_view()}
+                </ul>
+            </div>
+        </div>
+    }
+}
+
+#[component]
+fn SyncSourceCard(source: SyncSourceRecord) -> impl IntoView {
+    let run_href = format!(
+        "/admin/sync?source={}&run={}",
+        source.source_key,
+        chrono::Utc::now().timestamp()
+    );
+
+    view! {
+        <div class="note-card admin-block">
+            <div class="panel-head">
+                <span class="meta-label">{format!("{} · {}", source.direction, source.status)}</span>
+                <a href=run_href class="chip active">"执行一次占位同步"</a>
+            </div>
+            <h3>{source.label}</h3>
+            <p>{source.notes}</p>
+            <small class="board-footnote">
+                {format!(
+                    "{} · 最近运行：{}",
+                    source.endpoint,
+                    source.last_run_at.unwrap_or_else(|| "尚未运行".to_string())
+                )}
+            </small>
+        </div>
+    }
+}
+
+#[component]
+fn SyncRunCard(run: SyncRunRecord) -> impl IntoView {
+    view! {
+        <div class="note-card admin-fact-card">
+            <span class="meta-label">{format!("{} · {}", run.source_key, run.status)}</span>
+            <h3>{run.summary}</h3>
+            <small class="board-footnote">
+                {format!(
+                    "触发：{} · 开始：{} · 完成：{}",
+                    run.trigger,
+                    run.started_at,
+                    run.finished_at.unwrap_or_else(|| "未完成".to_string())
+                )}
+            </small>
+        </div>
+    }
+}
+
+#[component]
 fn AboutPage() -> impl IntoView {
     view! {
         <Title text="关于 | Wen's Field Notes" />
@@ -2098,6 +3293,34 @@ fn display_search_type(value: &str) -> &str {
         "notes" => "笔记",
         "projects" => "项目",
         _ => value,
+    }
+}
+
+fn normalize_note_board(value: &str) -> String {
+    match value.trim().to_lowercase().as_str() {
+        "rust" => "rust".to_string(),
+        "c++" | "cpp" => "cpp".to_string(),
+        "bochs" => "bochs".to_string(),
+        "general" | "" => "general".to_string(),
+        other => other.to_string(),
+    }
+}
+
+fn note_board_label(value: &str) -> &'static str {
+    match normalize_note_board(value).as_str() {
+        "rust" => "Rust",
+        "cpp" => "C++",
+        "bochs" => "Bochs",
+        _ => "通用笔记",
+    }
+}
+
+fn note_board_description(value: &str) -> &'static str {
+    match normalize_note_board(value).as_str() {
+        "rust" => "偏 Rust 学习、语义理解和项目实践记录。",
+        "cpp" => "预留给 C++ 相关笔记、语法复盘与底层实验。",
+        "bochs" => "预留给 Bochs、操作系统实验和调试记录。",
+        _ => "暂时还没归入专门技术板块的过程型笔记。",
     }
 }
 
@@ -2228,6 +3451,96 @@ pub async fn search_content(
     };
 
     content::search_content(&query, type_filter, tag_filter)
+        .await
+        .map_err(|error| ServerFnError::new(error.to_string()))
+}
+
+#[server(GetAdminDashboardOverview, "/api")]
+pub async fn get_admin_dashboard_overview() -> Result<AdminDashboardOverview, ServerFnError> {
+    content::get_admin_dashboard_overview()
+        .await
+        .map_err(|error| ServerFnError::new(error.to_string()))
+}
+
+#[server(ListAdminContent, "/api")]
+pub async fn list_admin_content(
+    query: String,
+    type_filter: String,
+    status_filter: String,
+) -> Result<Vec<AdminContentListItem>, ServerFnError> {
+    let type_filter = if type_filter.trim().is_empty() {
+        None
+    } else {
+        Some(type_filter.as_str())
+    };
+    let status_filter = if status_filter.trim().is_empty() {
+        None
+    } else {
+        Some(status_filter.as_str())
+    };
+
+    content::list_admin_content(&query, type_filter, status_filter)
+        .await
+        .map_err(|error| ServerFnError::new(error.to_string()))
+}
+
+#[server(GetAdminContentDetail, "/api")]
+pub async fn get_admin_content_detail(id: String) -> Result<AdminContentDetail, ServerFnError> {
+    content::get_admin_content_detail(&id)
+        .await
+        .map_err(|error| ServerFnError::new(error.to_string()))
+}
+
+#[server(GetNoteBoardsOverview, "/api")]
+pub async fn get_note_boards_overview() -> Result<Vec<NoteBoardSummary>, ServerFnError> {
+    content::get_note_boards_overview()
+        .await
+        .map_err(|error| ServerFnError::new(error.to_string()))
+}
+
+#[server(GetAdminSearchOverview, "/api")]
+pub async fn get_admin_search_overview(
+    sample_query: String,
+) -> Result<AdminSearchOverview, ServerFnError> {
+    content::get_admin_search_overview(&sample_query)
+        .await
+        .map_err(|error| ServerFnError::new(error.to_string()))
+}
+
+#[server(GetAdminStatsOverview, "/api")]
+pub async fn get_admin_stats_overview() -> Result<AdminStatsOverview, ServerFnError> {
+    content::get_admin_stats_overview()
+        .await
+        .map_err(|error| ServerFnError::new(error.to_string()))
+}
+
+#[server(GetAdminTasksOverview, "/api")]
+pub async fn get_admin_tasks_overview() -> Result<AdminTasksOverview, ServerFnError> {
+    content::get_admin_tasks_overview()
+        .await
+        .map_err(|error| ServerFnError::new(error.to_string()))
+}
+
+#[server(GetAdminSyncOverview, "/api")]
+pub async fn get_admin_sync_overview() -> Result<AdminSyncOverview, ServerFnError> {
+    content::get_admin_sync_overview()
+        .await
+        .map_err(|error| ServerFnError::new(error.to_string()))
+}
+
+#[server(RebuildSearchIndex, "/api")]
+pub async fn rebuild_search_index(trigger: String) -> Result<SearchRebuildRecord, ServerFnError> {
+    content::rebuild_search_index(&trigger)
+        .await
+        .map_err(|error| ServerFnError::new(error.to_string()))
+}
+
+#[server(RunSyncSource, "/api")]
+pub async fn run_sync_source(
+    source_key: String,
+    trigger: String,
+) -> Result<SyncRunRecord, ServerFnError> {
+    content::run_sync_source(&source_key, &trigger)
         .await
         .map_err(|error| ServerFnError::new(error.to_string()))
 }

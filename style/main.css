@@ -831,6 +831,72 @@ a {
   align-items: start;
 }
 
+.admin-shell {
+  gap: 1.2rem;
+}
+
+.admin-grid {
+  gap: 1rem;
+}
+
+.admin-block {
+  gap: 1rem;
+}
+
+.admin-stat-card,
+.admin-type-card,
+.admin-fact-card,
+.admin-issue-card {
+  min-height: 100%;
+}
+
+.admin-type-card h3,
+.admin-stat-card h3 {
+  margin: 0.35rem 0 0;
+}
+
+.admin-notes-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.6rem;
+  color: var(--text-soft);
+}
+
+.admin-content-card {
+  gap: 0.8rem;
+}
+
+.admin-content-facts,
+.admin-facts-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.notes-board-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.notes-board-sections {
+  gap: 1.2rem;
+}
+
+.board-footnote {
+  color: var(--text-soft);
+}
+
+.section-heading.compact {
+  gap: 0.8rem;
+  align-items: start;
+}
+
+.admin-filter-form {
+  max-width: none;
+}
+
+.admin-list-shell {
+  gap: 1rem;
+}
+
 .about-layout {
   grid-template-columns: 1.3fr 0.75fr;
 }
@@ -881,7 +947,9 @@ a {
   .tag-archive-layout,
   .entry-card-list,
   .stats-grid,
-  .tag-overview-grid {
+  .tag-overview-grid,
+  .admin-content-facts,
+  .admin-facts-grid {
     grid-template-columns: 1fr;
   }
 

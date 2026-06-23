@@ -2,6 +2,7 @@
 title: "首页更像工作台，不像简历页"
 summary: "这个站点的首页不该先展示技能标签，而应该先解释我正在认真做什么。"
 date: 2026-06-20
+board: general
 stage: 设计中
 source: 首页重构过程
 experiment_state: 持续观察
