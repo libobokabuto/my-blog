@@ -1,0 +1,17 @@
+[Unit]
+Description=my-blog SSR server
+After=network.target redis.service mysql.service
+
+[Service]
+Type=simple
+WorkingDirectory=/srv/my-blog
+Environment=SITE_URL=https://blog.example.com
+Environment=BLOG_DATABASE_URL=mysql://blog_user:change-me@127.0.0.1:3306/my-blog
+Environment=BLOG_REDIS_URL=redis://127.0.0.1:6379/
+Environment=RUST_LOG=server=info,tower_http=info
+ExecStart=/srv/my-blog/target/release/server
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

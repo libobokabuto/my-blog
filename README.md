@@ -1,14 +1,35 @@
 # my-blog
 
-一个以内容为核心、使用全栈 Rust 正式实现的个人网站项目。
+一个以内容为核心、使用全栈 Rust 构建的个人博客项目，当前已经收束到第五版 `v1.0`，目标是稳定、可运行、可部署。
 
-这个仓库既是我的博客站点，也是我用 `Leptos`、`Leptos SSR`、`Axum` 和 `Markdown` 持续推进的 Rust 实战项目。它更偏向“可长期维护的内容站”，而不是一开始就做成带后台、带数据库、带复杂交互的大型系统。
+这个仓库既是博客站点本身，也是我用 `Leptos SSR`、`Axum`、`MySQL`、`Redis` 和 `Markdown` 持续推进的 Rust 实战项目。`v1.0` 的重点不是继续扩张功能，而是把已经进入代码结构的后端能力真正跑通，整理成适合本地维护和服务器部署的成品版本。
 
-## 项目定位
+## v1.0 已完成什么
 
-- 用 Rust 贯通页面渲染、服务端输出和内容组织
-- 先把博客主链路做扎实，再扩展更多内容类型
-- 保留设计参考稿，让产品规划、视觉参考和正式代码并行演进
+`v1.0` 当前已经具备这些核心能力：
+
+- 公开站点：`/`、`/me`、`/blog`、`/notes`、`/projects`、`/tags`、`/archive`、`/about`、`/search`
+- 后台入口：`/admin`、`/admin/content`、`/admin/search`、`/admin/stats`、`/admin/tasks`、`/admin/sync`
+- 内容来源：继续使用仓库内 `Markdown` 作为正式内容源
+- 搜索链路：支持真实搜索索引重建，并将索引文档与重建记录写入 MySQL
+- 统计链路：支持最小可用的统计快照写入与后台展示
+- 任务链路：支持搜索重建、同步等服务端任务记录写入与展示
+- 同步链路：支持最小可用的同步源登记与同步运行记录写入
+- 运行态存储：Redis 用于记录搜索索引状态与轻量运行信息
+- 站点输出：支持 `rss.xml` 和 `sitemap.xml`
+- 部署资料：已补齐 `.env.example`、部署说明、Nginx 示例配置、`systemd` 示例配置
+
+## v1.0 刻意不做什么
+
+以下内容明确被留在 `v1.0` 之外：
+
+- 完整用户系统
+- 多角色权限与复杂 RBAC
+- 评论社区
+- 开放平台 API
+- 复杂工作流编排
+- 独立 worker / 队列系统
+- 大规模视觉重设计
 
 ## 技术栈
 
@@ -16,31 +37,21 @@
 - `Leptos`
 - `Leptos SSR`
 - `Axum`
+- `MySQL`
+- `Redis`
 - `Markdown`
 - `pulldown-cmark`
 - `CSS`
 
-## 当前已实现
+## 内容放在哪里
 
-- 正式的 `Leptos SSR` 项目骨架
-- 首页 `/`
-- 博客列表页 `/blog`
-- 博客详情页 `/blog/:slug`
-- 笔记页 `/notes`
-- 项目页 `/projects`
-- 关于页 `/about`
-- 基于本地 `Markdown` 的博客内容读取与渲染
-- 基于本地 `Markdown` 的笔记与项目内容读取
-- 博客详情页上一篇 / 下一篇导航
-- `rss.xml`
-- `sitemap.xml`
+站点内容继续按照三类目录维护：
 
-## 当前暂不实现
+- `content/blog/*.md`：博客文章
+- `content/notes/*.md`：学习笔记
+- `content/projects/*.md`：项目记录
 
-- 数据库
-- 评论系统
-- 站内搜索
-- 后台管理
+`v1.0` 继续坚持“Markdown 写内容，数据库存索引和运行记录”的方案，不把内容编辑切到数据库。
 
 ## 目录结构
 
@@ -55,67 +66,67 @@ my-blog/
 ├─ PRDS/                 # 产品需求、开发计划、版本记录
 ├─ LEARNING/             # Rust 学习记录
 ├─ scripts/              # 辅助脚本
-├─ deploy/               # 部署相关配置
+├─ deploy/               # 部署说明与示例配置
 ├─ Cargo.toml            # Rust workspace 配置
 └─ README.md
 ```
 
-## 内容组织
-
-- `content/blog`：正式博客文章
-- `content/notes`：后续笔记内容预留
-- `content/projects`：后续项目展示内容预留
-
-当前 `blog`、`notes` 和 `projects` 都已经接进正式页面系统，其中 `blog` 是最完整的主内容链路，`notes` 与 `projects` 是第一版正式补齐的轻量内容页。
-
-## 设计参考
-
-`static/demo-v1.html`、`static/css/demo-v1.css`、`static/js/demo-v1.js` 作为第一版视觉与信息结构参考稿继续保留。
-
-它们现在的职责是“设计参考”，不是正式运行时代码。
-
 ## 本地运行
 
-先确认本机已经具备：
+先准备好这些基础环境：
 
 - Rust 工具链：`stable-x86_64-pc-windows-msvc`
-- `cargo-leptos`
 - Visual Studio C++ Build Tools
-- `wasm32-unknown-unknown` target
+- MySQL
+- Redis
 
-开发模式运行：
-
-```powershell
-cargo leptos watch
-```
-
-默认访问地址：
-
-```text
-http://127.0.0.1:3000
-```
-
-生产构建：
+然后设置环境变量：
 
 ```powershell
-cargo leptos build --release
+$env:SITE_URL='http://127.0.0.1:3000'
+$env:BLOG_DATABASE_URL='mysql://root:your-password@127.0.0.1:3306/my-blog'
+$env:BLOG_REDIS_URL='redis://127.0.0.1:6379/'
+$env:RUST_LOG='server=info,tower_http=info'
 ```
 
-## 适合从哪里开始看
+启动开发服务：
 
-如果你是来学习这个项目，可以按这个顺序阅读：
+```powershell
+cargo run -p server --bin server
+```
+
+构建发布版本：
+
+```powershell
+cargo build -p server --bin server --release
+```
+
+## 部署相关
+
+部署资料已经整理到 `deploy/`：
+
+- `deploy/v1.0-部署说明.md`
+- `deploy/nginx.my-blog.conf.example`
+- `deploy/my-blog.service.example`
+- `.env.example`
+
+如果你准备把它放到服务器上，优先看 `deploy/v1.0-部署说明.md`。
+
+## 文档入口
+
+如果你想快速理解当前版本，建议按这个顺序阅读：
 
 1. `README.md`
-2. `PRDS/第一版/产品需求.md`
-3. `PRDS/第一版/开发计划.md`
-4. `app/src/lib.rs`
-5. `app/src/content.rs`
-6. `content/blog/*.md`
+2. `PRDS/第五版/产品需求.md`
+3. `PRDS/第五版/开发计划.md`
+4. `PRDS/第五版/VERSION_NOTES.md`
+5. `PRDS/第五版/v1.0-后续演进清单.md`
+6. `deploy/v1.0-部署说明.md`
 
-## 版本与迭代记录
+## 后续演进
 
-项目迭代记录不放在总 `README` 里，统一放在：
+`v1.0` 之后准备继续做的事情，已经单独整理到：
 
-- `PRDS/第一版/VERSION_NOTES.md`
+- `PRDS/第五版/v1.0-后续演进清单.md`
 
-如果你想看当前完成范围、第一版待补项和阶段性变化，直接看那份文档会更清楚。
+它把后续功能、内容建设、运维增强，以及明确不属于 `v1.0` 的事项拆开列清楚，方便继续推进时不打乱当前可部署版本。

@@ -211,7 +211,7 @@ fn HomePage() -> impl IntoView {
             <div class="section-kicker">"首页"</div>
             <div class="hero-grid">
                 <div class="hero-copy">
-                    <p class="eyebrow">"第三版正在把这个站点推进成更完整的内容系统。"</p>
+                    <p class="eyebrow">"`v1.0` 已把这个站点收束成可运行、可部署的个人内容系统。"</p>
                     <h1>"首页负责欢迎你进来，`/me` 负责把我最近在做什么摊开给你看。"</h1>
                     <p class="lede">
                         "现在的重点不再只是把页面补齐，而是把内容入口、最近动态、主题组织和轻量统计接成一张真正可继续生长的公开工作台。"
@@ -226,8 +226,8 @@ fn HomePage() -> impl IntoView {
                 <aside class="hero-aside">
                     <div class="note-card warm">
                         <span class="meta-label">"当前阶段"</span>
-                        <h2>"第三版 · 个人主页优先"</h2>
-                        <p>"这一轮先把 `/me`、首页、about、blog、notes、projects 的关系理顺，再继续推进内容关联、搜索和治理增强。"</p>
+                        <h2>"第五版 · `v1.0` 收尾完成"</h2>
+                        <p>"这一轮已经把 `/me`、首页、about、blog、notes、projects 的关系整理成统一站点结构，重点转到真实运行、部署与长期维护。"</p>
                     </div>
 
                     <div class="note-card">
@@ -408,10 +408,10 @@ fn HomePreview(overview: HomeOverview) -> impl IntoView {
             <div class="home-reference-grid">
                 <article class="panel manifesto-panel">
                     <div class="panel-head">
-                        <span class="meta-label">"第三版重点"</span>
+                        <span class="meta-label">"`v1.0` 重点"</span>
                         <span>"把内容组织成系统"</span>
                     </div>
-                    <p>"第三版的起点不是继续堆页面，而是先把个人主页做成内容站枢纽，让首页、about、博客、笔记和项目在结构上开始彼此支撑。"</p>
+                    <p>"这个版本的重点不是继续扩张页面，而是把个人主页、内容入口、后台与运行链路整理成真正可部署的个人内容站。"</p>
                     <div class="manifesto-list">
                         <span>"`/me` 负责公开工作台，首页负责迎接访问与总览。"</span>
                         <span>"最近动态和轻量统计先基于本地 Markdown 聚合。"</span>
@@ -433,8 +433,8 @@ fn HomePreview(overview: HomeOverview) -> impl IntoView {
                             .collect_view()}
                     </div>
                     <div class="timeline-list">
-                        <span>"当前不接数据库、后台、用户系统和持久化统计。"</span>
-                        <span>"最近动态与统计先走内容聚合，为第四版后端能力预留结构。"</span>
+                        <span>"当前已经接入数据库、后台与持久化统计，但仍然不扩展到用户系统和平台化能力。"</span>
+                        <span>"最近动态与统计已经接入真实后端链路，便于继续维护和核对运行状态。"</span>
                         <span>"这一步把 `/tags` 和 `/archive` 接起来，下一轮更适合继续推进内容关联。"</span>
                     </div>
                 </article>
@@ -490,7 +490,7 @@ fn MeWorkbench(overview: HomeOverview) -> impl IntoView {
                     <p class="eyebrow">"公开工作台 / public workbench"</p>
                     <h1>"这里比 about 更接近现场，比首页更接近我现在真正花时间的地方。"</h1>
                     <p class="lede">
-                        "我在用 Rust、Leptos SSR 和 Markdown 把这个站点做成可长期维护的内容系统。第三版先解决内容入口、最近动态、内容组织和治理前置问题，再决定后端能力什么时候值得接进来。"
+                        "我在用 Rust、Leptos SSR、MySQL、Redis 和 Markdown 把这个站点做成一个可长期维护的个人内容系统。现在的重点不是继续堆功能，而是保证内容发布、搜索、统计、任务和同步这些基础链路真实可运行。"
                     </p>
                     <div class="hero-actions">
                         <A href="/blog" attr:class="button primary">"看最新文章"</A>
@@ -1032,7 +1032,7 @@ fn NotesListContent(notes: Vec<NoteSummary>) -> impl IntoView {
                                     view! {
                                         <div class="note-card">
                                             <span class="meta-label">{note_board_label(&board)}</span>
-                                            <p>"这个板块已经预留好，后续你可以直接往这里补对应笔记。"</p>
+                                            <p>"这个板块暂时还没有内容，后续新增对应笔记后会直接显示在这里。"</p>
                                         </div>
                                     }
                                         .into_any()
@@ -1751,11 +1751,11 @@ fn ArchiveOverviewContent(overview: ArchiveOverview) -> impl IntoView {
             <div class="panel">
                 <div class="panel-head">
                     <span class="meta-label">"当前边界"</span>
-                    <span>"第三版阶段二"</span>
+                    <span>"当前归档边界"</span>
                 </div>
                 <div class="timeline-list">
                     <span>"当前时间归档只覆盖博客与笔记，因为它们已经具备稳定日期字段。"</span>
-                    <span>"项目内容是否纳入时间归档，放到第三版内容模型增强时统一处理。"</span>
+                    <span>"项目内容暂时仍独立展示，是否并入时间归档会放到后续版本统一判断。"</span>
                     <span>"如果想跨类型直接找内容，优先使用搜索页或标签总览。"</span>
                 </div>
             </div>
@@ -1916,7 +1916,7 @@ fn SearchPage() -> impl IntoView {
                     <div class="section-kicker">"站内搜索"</div>
                     <h2>"不想只靠时间线找内容时，搜索页应该给你一条更直接的路。"</h2>
                 </div>
-                <p>"搜索目前覆盖博客、笔记和项目，先把标题、摘要、正文和关键词检索做稳，不引入数据库。"</p>
+                <p>"搜索目前覆盖博客、笔记和项目，标题、摘要、正文和关键词检索都已经进入真实索引链路。"</p>
             </div>
 
             <SearchForm
@@ -2095,22 +2095,22 @@ fn AdminDashboardPage() -> impl IntoView {
         <Title text="后台概览 | Wen's Field Notes" />
         <Meta
             name="description"
-            content="查看第四版内容后台的当前骨架、内容总量、问题摘要与模块入口。"
+            content="查看当前内容后台的运行概览、内容总量、问题摘要与管理入口。"
         />
         <Meta name="robots" content="noindex,follow" />
         <PageHeadExtras
             title="后台概览 | Wen's Field Notes".to_string()
-            description="查看第四版内容后台的当前骨架、内容总量、问题摘要与模块入口。".to_string()
+            description="查看当前内容后台的运行概览、内容总量、问题摘要与管理入口。".to_string()
             canonical_path="/admin".to_string()
             robots="noindex,follow".to_string()
         />
         <section class="preview-section admin-shell">
             <div class="section-heading">
                 <div>
-                    <div class="section-kicker">"第四版后台"</div>
-                    <h2>"这里先把内容平台的读模型、治理入口和服务端边界搭起来。"</h2>
+                    <div class="section-kicker">"`v1.0` 后台"</div>
+                    <h2>"这里汇总内容后台、搜索、统计、任务和同步的真实运行状态。"</h2>
                 </div>
-                <p>"这一批不直接假装已经有数据库，而是先把第三版内容系统组织成可演进的后台骨架。"</p>
+                <p>"当前后台已经接入真实的 MySQL 与 Redis，用来验证内容治理、索引重建、统计快照和同步记录是否正常落库。"</p>
             </div>
 
             <div class="tag-row">
@@ -2176,7 +2176,7 @@ fn AdminDashboardContent(overview: AdminDashboardOverview) -> impl IntoView {
             <div class="editorial-card admin-block">
                 <div>
                     <span class="meta-label">"衔接说明"</span>
-                    <h3>"第四版第一步先搭桥，不提前越界到完整平台。"</h3>
+                    <h3>"后台现在承担运行验证与治理入口，不扩张为完整内容平台。"</h3>
                 </div>
                 <ul class="admin-notes-list">
                     {overview
@@ -2236,12 +2236,12 @@ fn AdminContentPage() -> impl IntoView {
         <Title text="内容后台 | Wen's Field Notes" />
         <Meta
             name="description"
-            content="查看第四版统一内容后台列表、筛选条件、来源路径和问题摘要。"
+            content="查看统一内容后台列表、筛选条件、来源路径和问题摘要。"
         />
         <Meta name="robots" content="noindex,follow" />
         <PageHeadExtras
             title="内容后台 | Wen's Field Notes".to_string()
-            description="查看第四版统一内容后台列表、筛选条件、来源路径和问题摘要。".to_string()
+            description="查看统一内容后台列表、筛选条件、来源路径和问题摘要。".to_string()
             canonical_path="/admin/content".to_string()
             robots="noindex,follow".to_string()
         />
@@ -2421,12 +2421,12 @@ fn AdminContentDetailPage() -> impl IntoView {
         <Title text="内容详情 | Wen's Field Notes" />
         <Meta
             name="description"
-            content="查看第四版后台中的单条内容详情、衔接说明、关联项与问题摘要。"
+            content="查看后台中的单条内容详情、来源信息、关联项与问题摘要。"
         />
         <Meta name="robots" content="noindex,follow" />
         <PageHeadExtras
             title="内容详情 | Wen's Field Notes".to_string()
-            description="查看第四版后台中的单条内容详情、衔接说明、关联项与问题摘要。".to_string()
+            description="查看后台中的单条内容详情、来源信息、关联项与问题摘要。".to_string()
             canonical_path="/admin/content".to_string()
             robots="noindex,follow".to_string()
         />
@@ -2510,7 +2510,7 @@ fn AdminContentDetailContent(detail: AdminContentDetail) -> impl IntoView {
             <div class="editorial-card admin-block">
                 <div>
                     <span class="meta-label">"关联内容"</span>
-                    <h3>"这里沿用第三版已有的关联逻辑，第四版先把它收进后台视图。"</h3>
+                    <h3>"这里沿用现有的关联逻辑，把公开站点里的内容关系同步展示到后台视图。"</h3>
                 </div>
                 {if detail.related.is_empty() {
                     view! {
@@ -2546,7 +2546,7 @@ fn AdminContentDetailContent(detail: AdminContentDetail) -> impl IntoView {
             <div class="editorial-card admin-block">
                 <div>
                     <span class="meta-label">"衔接说明"</span>
-                    <h3>"这几条说明用来保护第四版边界。"</h3>
+                    <h3>"这几条说明用来明确当前后台的职责边界。"</h3>
                 </div>
                 <ul class="admin-notes-list">
                     {detail
@@ -2608,12 +2608,12 @@ fn AdminSearchPage() -> impl IntoView {
         <Title text="搜索后台 | Wen's Field Notes" />
         <Meta
             name="description"
-            content="查看第四版搜索索引状态、重建记录、运行态依赖与查询诊断。"
+            content="查看搜索索引状态、重建记录、运行态依赖与查询诊断。"
         />
         <Meta name="robots" content="noindex,follow" />
         <PageHeadExtras
             title="搜索后台 | Wen's Field Notes".to_string()
-            description="查看第四版搜索索引状态、重建记录、运行态依赖与查询诊断。".to_string()
+            description="查看搜索索引状态、重建记录、运行态依赖与查询诊断。".to_string()
             canonical_path="/admin/search".to_string()
             robots="noindex,follow".to_string()
         />
@@ -2621,7 +2621,7 @@ fn AdminSearchPage() -> impl IntoView {
             <div class="section-heading">
                 <div>
                     <div class="section-kicker">"搜索后台"</div>
-                    <h2>"第四版第二项先把搜索从页面能力，推进成正式索引基础设施。"</h2>
+                    <h2>"这里负责确认搜索索引已经真实落库，并且可以随时重建。"</h2>
                 </div>
                 <p>"这里会直接告诉我们 MySQL 和 Redis 是否可用、索引有没有落库、最近一次重建发生了什么。"</p>
             </div>
@@ -2738,7 +2738,7 @@ fn AdminSearchContent(
             <div class="editorial-card admin-block">
                 <div>
                     <span class="meta-label">"覆盖说明"</span>
-                    <h3>"这一层明确告诉我们第四版索引现在到底覆盖到了哪里。"</h3>
+                    <h3>"这一层明确告诉我们当前索引实际覆盖到了哪些内容。"</h3>
                 </div>
                 <ul class="admin-notes-list">
                     {overview
@@ -2800,12 +2800,12 @@ fn AdminStatsPage() -> impl IntoView {
         <Title text="统计后台 | Wen's Field Notes" />
         <Meta
             name="description"
-            content="查看第四版统计快照、治理指标与持久化统计骨架。"
+            content="查看统计快照、治理指标与持久化统计结果。"
         />
         <Meta name="robots" content="noindex,follow" />
         <PageHeadExtras
             title="统计后台 | Wen's Field Notes".to_string()
-            description="查看第四版统计快照、治理指标与持久化统计骨架。".to_string()
+            description="查看统计快照、治理指标与持久化统计结果。".to_string()
             canonical_path="/admin/stats".to_string()
             robots="noindex,follow".to_string()
         />
@@ -2813,7 +2813,7 @@ fn AdminStatsPage() -> impl IntoView {
             <div class="section-heading">
                 <div>
                     <div class="section-kicker">"统计后台"</div>
-                    <h2>"第四版第三项先把内容治理指标落到 MySQL，再谈公开数据看板。"</h2>
+                    <h2>"这里负责把治理指标写入 MySQL，方便核对站点当前状态。"</h2>
                 </div>
                 <p>"这里的统计当前偏内部运营视角，先服务内容后台、任务系统和同步边界。"</p>
             </div>
@@ -2865,7 +2865,7 @@ fn AdminStatsContent(overview: AdminStatsOverview) -> impl IntoView {
             <div class="editorial-card admin-block">
                 <div>
                     <span class="meta-label">"范围说明"</span>
-                    <h3>"这一层还在第四版边界内，没有越界成完整 BI 系统。"</h3>
+                    <h3>"统计页只承担站点治理与运行核对，不扩展成完整 BI 系统。"</h3>
                 </div>
                 <ul class="admin-notes-list">
                     {overview
@@ -2900,12 +2900,12 @@ fn AdminTasksPage() -> impl IntoView {
         <Title text="任务后台 | Wen's Field Notes" />
         <Meta
             name="description"
-            content="查看第四版任务记录、重建动作和服务端任务骨架。"
+            content="查看任务记录、重建动作和服务端执行历史。"
         />
         <Meta name="robots" content="noindex,follow" />
         <PageHeadExtras
             title="任务后台 | Wen's Field Notes".to_string()
-            description="查看第四版任务记录、重建动作和服务端任务骨架。".to_string()
+            description="查看任务记录、重建动作和服务端执行历史。".to_string()
             canonical_path="/admin/tasks".to_string()
             robots="noindex,follow".to_string()
         />
@@ -2915,7 +2915,7 @@ fn AdminTasksPage() -> impl IntoView {
                     <div class="section-kicker">"任务后台"</div>
                     <h2>"先把搜索重建、同步运行这些动作变成正式记录。"</h2>
                 </div>
-                <p>"第四版当前仍然是应用内触发任务，不引入独立 worker 和复杂编排。"</p>
+                <p>"当前仍然采用应用内触发任务的方式，不引入独立 worker 和复杂编排。"</p>
             </div>
 
             <div class="tag-row">
@@ -2965,7 +2965,7 @@ fn AdminTasksContent(overview: AdminTasksOverview) -> impl IntoView {
             <div class="editorial-card admin-block">
                 <div>
                     <span class="meta-label">"范围说明"</span>
-                    <h3>"这里的任务系统还是轻量骨架。"</h3>
+                    <h3>"任务页当前聚焦执行记录与结果追踪，不扩展为复杂调度系统。"</h3>
                 </div>
                 <ul class="admin-notes-list">
                     {overview
@@ -3024,12 +3024,12 @@ fn AdminSyncPage() -> impl IntoView {
         <Title text="同步后台 | Wen's Field Notes" />
         <Meta
             name="description"
-            content="查看第四版外部同步边界、同步源与运行记录骨架。"
+            content="查看同步边界、同步源与运行记录。"
         />
         <Meta name="robots" content="noindex,follow" />
         <PageHeadExtras
             title="同步后台 | Wen's Field Notes".to_string()
-            description="查看第四版外部同步边界、同步源与运行记录骨架。".to_string()
+            description="查看同步边界、同步源与运行记录。".to_string()
             canonical_path="/admin/sync".to_string()
             robots="noindex,follow".to_string()
         />
@@ -3037,9 +3037,9 @@ fn AdminSyncPage() -> impl IntoView {
             <div class="section-heading">
                 <div>
                     <div class="section-kicker">"同步后台"</div>
-                    <h2>"第四版先确定同步边界、同步源和任务记录，不直接做开放平台。"</h2>
+                    <h2>"这里负责确认同步源、同步记录和任务链路已经可以最小可用地跑通。"</h2>
                 </div>
-                <p>"这里当前展示的是可演进骨架，重点是边界清晰，而不是完整第三方集成。"</p>
+                <p>"当前同步页重点是记录来源、执行结果和失败信息，不扩展到完整第三方开放平台。"</p>
             </div>
 
             <div class="tag-row">
@@ -3120,7 +3120,7 @@ fn AdminSyncContent(
             <div class="editorial-card admin-block">
                 <div>
                     <span class="meta-label">"范围说明"</span>
-                    <h3>"这一层故意停在第四版边界内。"</h3>
+                    <h3>"同步页当前只覆盖 `v1.0` 所需的最小闭环。"</h3>
                 </div>
                 <ul class="admin-notes-list">
                     {overview
@@ -3146,7 +3146,7 @@ fn SyncSourceCard(source: SyncSourceRecord) -> impl IntoView {
         <div class="note-card admin-block">
             <div class="panel-head">
                 <span class="meta-label">{format!("{} · {}", source.direction, source.status)}</span>
-                <a href=run_href class="chip active">"执行一次占位同步"</a>
+                <a href=run_href class="chip active">"执行一次同步"</a>
             </div>
             <h3>{source.label}</h3>
             <p>{source.notes}</p>
@@ -3185,11 +3185,11 @@ fn AboutPage() -> impl IntoView {
         <Title text="关于 | Wen's Field Notes" />
         <Meta
             name="description"
-            content="了解这个个人内容站为什么存在、如何推进，以及第三版当前明确的范围边界。"
+            content="了解这个个人内容站为什么存在、如何推进，以及 `v1.0` 当前明确的范围边界。"
         />
         <PageHeadExtras
             title="关于 | Wen's Field Notes".to_string()
-            description="了解这个个人内容站为什么存在、如何推进，以及第三版当前明确的范围边界。".to_string()
+            description="了解这个个人内容站为什么存在、如何推进，以及 `v1.0` 当前明确的范围边界。".to_string()
             canonical_path="/about".to_string()
         />
         <section class="preview-section about-section">
@@ -3198,7 +3198,7 @@ fn AboutPage() -> impl IntoView {
                 <div class="about-copy">
                     <h2>"我想把这个网站做成一份持续更新的公开工作现场，而不是一张静态名片。"</h2>
                     <p>"这个仓库里会同时放产品文档、学习文档和正式代码。Rust 学习不是和项目分开的副线，而是直接在真实实现里推进。"</p>
-                    <p>"第三版当前先做个人主页、内容组织、关联、搜索和治理增强。数据库、评论、后台和用户系统仍然明确不在当前范围里。"</p>
+                    <p>"这个版本以可部署上线为目标，已经把数据库、搜索、后台、统计、任务和同步链路接了起来，但仍然刻意不扩展到评论、用户系统和平台化能力。"</p>
                     <p>"如果你想直接看我最近在做什么，请去 `/me`；如果你想理解这个站为什么这样组织、为什么暂时不引入更重的系统能力，这一页更适合。"</p>
                 </div>
 
@@ -3215,7 +3215,7 @@ fn AboutPage() -> impl IntoView {
 
                     <div class="identity-card contact">
                         <span class="meta-label">"当前边界"</span>
-                        <p>"第三版重点是内容系统增强，不接数据库、持久化统计、后台、任务系统和外部数据同步。"</p>
+                        <p>"`v1.0` 重点是把现有内容站稳定落地，不新增用户体系、评论社区、开放平台和复杂工作流。"</p>
                     </div>
                 </div>
             </div>
@@ -3318,8 +3318,8 @@ fn note_board_label(value: &str) -> &'static str {
 fn note_board_description(value: &str) -> &'static str {
     match normalize_note_board(value).as_str() {
         "rust" => "偏 Rust 学习、语义理解和项目实践记录。",
-        "cpp" => "预留给 C++ 相关笔记、语法复盘与底层实验。",
-        "bochs" => "预留给 Bochs、操作系统实验和调试记录。",
+        "cpp" => "收纳 C++ 相关笔记、语法复盘与底层实验记录。",
+        "bochs" => "收纳 Bochs、操作系统实验和调试记录。",
         _ => "暂时还没归入专门技术板块的过程型笔记。",
     }
 }
