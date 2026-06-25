@@ -80,19 +80,44 @@ my-blog/
 - MySQL
 - Redis
 
-然后设置环境变量：
+推荐做法是在仓库根目录放一个不提交到 Git 的 `.env.local`，内容可以参考 `.env.example`：
 
 ```powershell
-$env:SITE_URL='http://127.0.0.1:3000'
-$env:BLOG_DATABASE_URL='mysql://root:your-password@127.0.0.1:3306/my-blog'
-$env:BLOG_REDIS_URL='redis://127.0.0.1:6379/'
-$env:RUST_LOG='server=info,tower_http=info'
+SITE_URL=http://127.0.0.1:3000
+BLOG_DATABASE_URL=mysql://root:your-password@127.0.0.1:3306/my-blog
+BLOG_REDIS_URL=redis://127.0.0.1:6379/
+RUST_LOG=server=info,tower_http=info
 ```
 
-启动开发服务：
+然后直接用脚本启动：
 
 ```powershell
-cargo run -p server --bin server
+.\scripts\start-local.ps1
+```
+
+脚本会自动帮你做这些事：
+
+- 设置 PowerShell UTF-8 输出编码
+- 读取 `.env.local` 或 `.env`
+- 自动停止旧的 `target\debug\server.exe`
+- 再执行 `cargo run -p server --bin server`
+
+如果你暂时不想放 `.env.local`，也可以临时传参启动：
+
+```powershell
+.\scripts\start-local.ps1 -DatabaseUrl 'mysql://root:你的密码@127.0.0.1:3306/my-blog' -RedisUrl 'redis://127.0.0.1:6379/' -SiteUrl 'http://127.0.0.1:3000'
+```
+
+只检查环境、不真正启动服务：
+
+```powershell
+.\scripts\start-local.ps1 -CheckOnly
+```
+
+停止本地服务：
+
+```powershell
+.\scripts\stop-local.ps1
 ```
 
 构建发布版本：

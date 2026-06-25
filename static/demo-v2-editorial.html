@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="latte">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人内容网站 v2 Editorial Demo</title>
+  <link rel="stylesheet" href="./css/demo-v2-editorial.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="masthead">
+      <div class="masthead-copy">
+        <p class="eyebrow">视觉提案 · 独立 Demo</p>
+        <h1>把首页、`/me` 和 About 拆成三种不同的阅读经验。</h1>
+        <p class="lede">
+          这版不追求“信息很多”，而是追求“职责很清楚”：首页只负责迎接，
+          `/me` 负责展示运行状态，About 负责讲人和原则。
+        </p>
+        <div class="theme-switch" aria-label="主题切换">
+          <button class="theme-chip" type="button" data-theme-option="mocha">Catppuccin Mocha</button>
+          <button class="theme-chip is-active" type="button" data-theme-option="latte">Catppuccin Latte</button>
+        </div>
+      </div>
+      <aside class="design-note">
+        <span class="label">设计判断</span>
+        <p>这次不再走暖黄米色，而是借 Catppuccin 的层次关系，把站点做得更冷静、更干净。</p>
+      </aside>
+    </header>
+
+    <main class="layout">
+      <section class="stage home-stage">
+        <div class="stage-head">
+          <p class="kicker">Home / 首屏</p>
+          <h2>更安静、更集中，只留欢迎语和入口。</h2>
+        </div>
+
+        <div class="home-hero">
+          <div class="hero-copy">
+            <p class="eyebrow">欢迎来到我的个人内容站</p>
+            <h3>这里不是统计面板，而是一个长期生长的内容入口。</h3>
+            <p>
+              首页不再展示复杂数据，只保留一句清晰的自我介绍、几个核心入口，
+              以及一条能让人判断站点气质的短说明。
+            </p>
+            <div class="actions">
+              <a href="#me">进入 `/me`</a>
+              <a href="#about">查看 About</a>
+              <a href="#content">浏览内容</a>
+            </div>
+          </div>
+
+          <div class="home-rail">
+            <article class="rail-card featured">
+              <span class="badge home">HOME</span>
+              <h4>欢迎 + 导览</h4>
+              <p>不放统计、不放仪表盘，只做清晰入口。</p>
+            </article>
+            <article class="rail-card">
+              <span class="badge muted">入口</span>
+              <p>博客、笔记、项目、搜索，作为纯导航存在。</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="stage me-stage" id="me">
+        <div class="stage-head">
+          <p class="kicker">/me / 动态工作台</p>
+          <h2>信息可以多，但要像工作台，不像杂物堆。</h2>
+        </div>
+
+        <div class="me-grid">
+          <article class="metric-card strong">
+            <span class="badge blog soft-badge">BLOG</span>
+            <strong>博客 12</strong>
+            <p>正式文章数量，强调持续输出。</p>
+          </article>
+          <article class="metric-card">
+            <span class="badge note soft-badge">NOTE</span>
+            <strong>笔记 38</strong>
+            <p>碎片化学习记录，更轻、更快。</p>
+          </article>
+          <article class="metric-card">
+            <span class="badge project soft-badge">PROJECT</span>
+            <strong>项目 5</strong>
+            <p>当前在推进的作品和实验。</p>
+          </article>
+          <article class="metric-card">
+            <span class="badge tag soft-badge">TAG</span>
+            <strong>主题 11</strong>
+            <p>知识结构和内容组织入口。</p>
+          </article>
+          <article class="metric-card wide">
+            <span class="badge now soft-badge">NOW</span>
+            <strong>最新动态</strong>
+            <p>正在把 Rust 个人站从“能用”打磨到“愿意长期看下去”。</p>
+          </article>
+        </div>
+
+        <div class="timeline">
+          <article class="timeline-item">
+            <span class="date">今天</span>
+            <h4>整理首页职责，删掉重复数据位。</h4>
+          </article>
+          <article class="timeline-item">
+            <span class="date">本周</span>
+            <h4>把博客、笔记、项目做成不同密度的卡片。</h4>
+          </article>
+          <article class="timeline-item">
+            <span class="date">当前重点</span>
+            <h4>先让前端形成稳定风格，再继续补功能。</h4>
+          </article>
+        </div>
+      </section>
+
+      <section class="stage content-stage" id="content">
+        <div class="stage-head">
+          <p class="kicker">内容页 / 差异化表达</p>
+          <h2>博客、笔记、项目不该长得一样。</h2>
+        </div>
+
+        <div class="content-grid">
+          <article class="content-card blog">
+            <div class="card-top">
+              <span class="badge blog">BLOG</span>
+              <span class="meta">长文 · 结构化表达</span>
+            </div>
+            <h4>正式文章</h4>
+            <p>更明确的标题层级、更完整的摘要、更像被陈列出来的作品。</p>
+          </article>
+          <article class="content-card note">
+            <div class="card-top">
+              <span class="badge note">NOTE</span>
+              <span class="meta">短记 · 轻量记录</span>
+            </div>
+            <h4>笔记条目</h4>
+            <p>更轻、更窄、更少边框，像时间线上的一条思考痕迹。</p>
+          </article>
+          <article class="content-card project">
+            <div class="card-top">
+              <span class="badge project">PROJECT</span>
+              <span class="meta">作品 · 状态明确</span>
+            </div>
+            <h4>项目卡片</h4>
+            <p>更强调目标、技术栈、当前状态，像作品架，不像信息流。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="stage about-stage" id="about">
+        <div class="stage-head">
+          <p class="kicker">About / 纯文案</p>
+          <h2>About 只讲我是谁、我在乎什么、我不想把它做成什么。</h2>
+        </div>
+
+        <div class="about-grid">
+          <article class="about-copy">
+            <p>我想把这个站做成一份持续更新的公开工作现场，而不是静态名片。</p>
+            <p>这里会留下阶段性的判断、正在推进的项目、正在学习的东西，以及那些还没完全想清楚但值得记录的想法。</p>
+            <p>技术栈应该退到最后一层，只作为注脚存在。</p>
+          </article>
+          <aside class="about-foot">
+            <span class="label">技术栈注脚</span>
+            <p>Rust · Leptos · SSR · Markdown · 极简排版</p>
+          </aside>
+        </div>
+      </section>
+
+      <section class="stage search-stage">
+        <div class="stage-head">
+          <p class="kicker">Search / 组合搜索栏</p>
+          <h2>搜索区应该像一条工具带，而不是散开的表单。</h2>
+        </div>
+
+        <div class="search-bar">
+          <button class="select" type="button">全部类型</button>
+          <input type="text" value="Rust 所有权" aria-label="搜索关键词">
+          <button class="select secondary" type="button">标签筛选</button>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script>
+    (function () {
+      const root = document.documentElement;
+      const chips = document.querySelectorAll('[data-theme-option]');
+      chips.forEach((chip) => {
+        chip.addEventListener('click', () => {
+          const theme = chip.getAttribute('data-theme-option');
+          root.setAttribute('data-theme', theme);
+          chips.forEach((item) => item.classList.toggle('is-active', item === chip));
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
