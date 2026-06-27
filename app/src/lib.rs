@@ -25,7 +25,22 @@ use leptos::config::LeptosOptions;
 
 const DEFAULT_SITE_URL: &str = "http://127.0.0.1:3000";
 const STYLESHEET_VERSION: &str = "20260625-catppuccin";
-const AVATAR_IMAGE_PATH: &str = "/images/2fb011faf0a8a663c5424203cc3ebd94.jpg";
+const AVATAR_IMAGE_PATH: &str = "/images/avatar/wen-avatar.jpg";
+#[cfg(not(feature = "ssr"))]
+const THEME_STORAGE_KEY: &str = "theme-preference";
+const THEME_BOOTSTRAP_SCRIPT: &str = r#"
+(function () {
+  try {
+    var stored = window.localStorage.getItem("theme-preference");
+    var root = document.documentElement;
+    if (stored === "light" || stored === "dark") {
+      root.setAttribute("data-theme", stored);
+    } else {
+      root.removeAttribute("data-theme");
+    }
+  } catch (_) {}
+})();
+"#;
 
 #[cfg(feature = "ssr")]
 pub fn shell(options: LeptosOptions) -> impl IntoView {
@@ -35,6 +50,7 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
             <head>
                 <meta charset="utf-8" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
+                <script>{THEME_BOOTSTRAP_SCRIPT}</script>
                 <AutoReload options=options.clone() />
                 <HydrationScripts options islands=false />
                 <leptos_meta::MetaTags />
@@ -214,11 +230,130 @@ fn SiteHeader() -> impl IntoView {
                                 <A href="/blog">"进入博客"</A>
                                 <A href="/notes">"翻看笔记"</A>
                             </div>
+                            <ThemeToggle />
                         </div>
                     </div>
                 </div>
             </div>
         </header>
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum ThemeChoice {
+    System,
+    Light,
+    Dark,
+}
+
+impl ThemeChoice {
+    #[cfg(not(feature = "ssr"))]
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::System => "system",
+            Self::Light => "light",
+            Self::Dark => "dark",
+        }
+    }
+
+    fn label(self) -> &'static str {
+        match self {
+            Self::System => "跟随",
+            Self::Light => "浅色",
+            Self::Dark => "暗色",
+        }
+    }
+}
+
+#[cfg(not(feature = "ssr"))]
+fn detect_theme_choice() -> ThemeChoice {
+    let window = match web_sys::window() {
+        Some(window) => window,
+        None => return ThemeChoice::Dark,
+    };
+
+    if let Some(document) = window.document() {
+        if let Some(root) = document.document_element() {
+            if let Some(theme) = root.get_attribute("data-theme") {
+                return match theme.as_str() {
+                    "system" => ThemeChoice::System,
+                    "light" => ThemeChoice::Light,
+                    "dark" => ThemeChoice::Dark,
+                    _ => ThemeChoice::System,
+                };
+            }
+        }
+    }
+
+    ThemeChoice::System
+}
+
+#[cfg(feature = "ssr")]
+fn detect_theme_choice() -> ThemeChoice {
+    ThemeChoice::System
+}
+
+#[cfg(not(feature = "ssr"))]
+fn persist_theme_choice(theme: ThemeChoice) {
+    if let Some(window) = web_sys::window() {
+        if let Some(document) = window.document() {
+            if let Some(root) = document.document_element() {
+                match theme {
+                    ThemeChoice::System => {
+                        let _ = root.remove_attribute("data-theme");
+                    }
+                    ThemeChoice::Light | ThemeChoice::Dark => {
+                        let _ = root.set_attribute("data-theme", theme.as_str());
+                    }
+                }
+            }
+        }
+
+        if let Ok(Some(storage)) = window.local_storage() {
+            let _ = storage.set_item(THEME_STORAGE_KEY, theme.as_str());
+        }
+    }
+}
+
+#[cfg(feature = "ssr")]
+#[allow(dead_code)]
+fn persist_theme_choice(_theme: ThemeChoice) {}
+
+#[component]
+fn ThemeToggle() -> impl IntoView {
+    let theme = RwSignal::new(detect_theme_choice());
+
+    #[cfg(not(feature = "ssr"))]
+    Effect::new(move |_| {
+        persist_theme_choice(theme.get());
+    });
+
+    view! {
+        <div class="theme-toggle-group" role="tablist" aria-label="主题切换">
+            {[ThemeChoice::System, ThemeChoice::Light, ThemeChoice::Dark]
+                .into_iter()
+                .map(|choice| {
+                    view! {
+                        <button
+                            type="button"
+                            class=move || {
+                                if theme.get() == choice {
+                                    "theme-toggle-option is-active"
+                                } else {
+                                    "theme-toggle-option"
+                                }
+                            }
+                            on:click=move |_| theme.set(choice)
+                            role="tab"
+                            aria-selected=move || if theme.get() == choice { "true" } else { "false" }
+                            title=choice.label()
+                        >
+                            <span>{choice.label()}</span>
+                        </button>
+                    }
+                })
+                .collect_view()}
+        </div>
     }
 }
 
@@ -928,9 +1063,8 @@ fn NotesPage() -> impl IntoView {
             <div class="section-heading">
                 <div>
                     <div class="section-kicker">"笔记"</div>
-                    <h2>"这里保留学习过程本身，不强迫每条记录都写成一篇正式文章。"</h2>
+                    <h2>"学习记录"</h2>
                 </div>
-                <p>"笔记页优先可扫读性。现在按技术板块收拢，但不再用补丁式统计块打断阅读节奏，直接从条目开始。"</p>
             </div>
 
             <Suspense fallback=move || view! { <PageLoading label="正在载入笔记..." /> }>
@@ -984,7 +1118,7 @@ fn NotesListContent(notes: Vec<NoteSummary>) -> impl IntoView {
                                     view! {
                                         <div class="note-card">
                                             <span class="meta-label">{note_board_label(&board)}</span>
-                                            <p>"这个板块暂时还没有内容，后续新增对应笔记后会直接显示在这里。"</p>
+                                            <p>"暂时还没有公开内容。"</p>
                                         </div>
                                     }
                                         .into_any()
@@ -1171,7 +1305,6 @@ fn ProjectsPage() -> impl IntoView {
                     <div class="section-kicker">"项目"</div>
                     <h2>"项目"</h2>
                 </div>
-                <p>"按状态查看正在推进和已经归档的项目。"</p>
             </div>
 
             <Suspense fallback=move || view! { <PageLoading label="正在载入项目..." /> }>
@@ -1324,11 +1457,11 @@ fn ProjectDetailContent(project: ProjectEntry) -> impl IntoView {
             <div class="section-heading project-detail-head">
                 <div>
                     <div class="section-kicker">"项目详情"</div>
-                    <h2>"项目页应该先让人知道它在解决什么，再决定要不要继续深入。"</h2>
+                    <h2>"项目详情"</h2>
                 </div>
                 <div class="article-nav-inline">
                     <A href="/projects">"返回项目列表"</A>
-                    <A href="/search?q=Rust">"继续浏览内容"</A>
+                    <A href="/">"返回首页"</A>
                 </div>
             </div>
 

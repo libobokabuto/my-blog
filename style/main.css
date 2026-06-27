@@ -11,12 +11,12 @@
   --text: #16181d;
   --text-soft: #5a6474;
   --text-muted: #737f91;
-  --accent: #8839ef;
-  --accent-deep: #7287fd;
+  --accent: #4f8cff;
+  --accent-deep: #77a8ff;
   --accent-blog: #d20f39;
   --accent-note: #179299;
   --accent-project: #40a02b;
-  --accent-tag: #df8e1d;
+  --accent-tag: #c88931;
   --shadow-lg: 0 18px 48px rgba(80, 88, 104, 0.12);
   --shadow-md: 0 10px 26px rgba(80, 88, 104, 0.08);
   --radius-xl: 30px;
@@ -32,28 +32,51 @@
   --content-width: min(1180px, calc(100vw - 2rem));
 }
 
+:root[data-theme="dark"] {
+  --bg: #12141a;
+  --bg-soft: #171a22;
+  --panel: rgba(28, 32, 41, 0.82);
+  --panel-strong: rgba(22, 25, 33, 0.72);
+  --surface-card: rgba(33, 37, 48, 0.96);
+  --surface-glass: rgba(39, 44, 56, 0.58);
+  --surface-note: rgba(110, 168, 254, 0.08);
+  --line: rgba(196, 205, 223, 0.12);
+  --line-strong: rgba(214, 222, 237, 0.22);
+  --text: #f3f5f7;
+  --text-soft: #e2e8f0;
+  --text-muted: #c7d0dd;
+  --accent: #6ea8fe;
+  --accent-deep: #96bbff;
+  --accent-blog: #ff7b93;
+  --accent-note: #61c9d4;
+  --accent-project: #8fd17f;
+  --accent-tag: #f1c27d;
+  --shadow-lg: 0 22px 60px rgba(6, 8, 13, 0.46);
+  --shadow-md: 0 12px 32px rgba(6, 8, 13, 0.32);
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #1e1e2e;
-    --bg-soft: #181825;
-    --panel: rgba(49, 50, 68, 0.54);
-    --panel-strong: rgba(49, 50, 68, 0.34);
-    --surface-card: rgba(49, 50, 68, 0.86);
-    --surface-glass: rgba(49, 50, 68, 0.28);
-    --surface-note: rgba(137, 220, 235, 0.08);
-    --line: rgba(198, 206, 231, 0.16);
-    --line-strong: rgba(220, 226, 245, 0.3);
-    --text: #eef2ff;
-    --text-soft: #d9deec;
-    --text-muted: #c4cadb;
-    --accent: #cba6f7;
-    --accent-deep: #89b4fa;
-    --accent-blog: #f38ba8;
-    --accent-note: #89dceb;
-    --accent-project: #a6e3a1;
-    --accent-tag: #f9e2af;
-    --shadow-lg: 0 18px 55px rgba(17, 17, 27, 0.34);
-    --shadow-md: 0 10px 28px rgba(17, 17, 27, 0.16);
+  :root:not([data-theme="light"]) {
+    --bg: #12141a;
+    --bg-soft: #171a22;
+    --panel: rgba(28, 32, 41, 0.82);
+    --panel-strong: rgba(22, 25, 33, 0.72);
+    --surface-card: rgba(33, 37, 48, 0.96);
+    --surface-glass: rgba(39, 44, 56, 0.58);
+    --surface-note: rgba(110, 168, 254, 0.08);
+    --line: rgba(196, 205, 223, 0.12);
+    --line-strong: rgba(214, 222, 237, 0.22);
+    --text: #f3f5f7;
+    --text-soft: #e2e8f0;
+    --text-muted: #c7d0dd;
+    --accent: #6ea8fe;
+    --accent-deep: #96bbff;
+    --accent-blog: #ff7b93;
+    --accent-note: #61c9d4;
+    --accent-project: #8fd17f;
+    --accent-tag: #f1c27d;
+    --shadow-lg: 0 22px 60px rgba(6, 8, 13, 0.46);
+    --shadow-md: 0 12px 32px rgba(6, 8, 13, 0.32);
   }
 }
 
@@ -77,8 +100,8 @@ body {
     sans-serif;
   font-weight: 450;
   background:
-    radial-gradient(circle at top left, color-mix(in srgb, var(--accent) 9%, transparent), transparent 30%),
-    radial-gradient(circle at 85% 10%, color-mix(in srgb, var(--accent-deep) 8%, transparent), transparent 24%),
+    radial-gradient(circle at top left, color-mix(in srgb, var(--accent) 8%, transparent), transparent 28%),
+    radial-gradient(circle at 82% 8%, color-mix(in srgb, var(--accent-deep) 6%, transparent), transparent 22%),
     linear-gradient(180deg, var(--bg) 0%, var(--bg-soft) 100%);
   text-wrap: pretty;
   -webkit-font-smoothing: antialiased;
@@ -356,7 +379,7 @@ a {
 .avatar-popover {
   position: absolute;
   right: 0;
-  top: calc(100% + 0.75rem);
+  top: calc(100% + 0.35rem);
   z-index: 30;
   display: grid;
   gap: 0.9rem;
@@ -372,7 +395,17 @@ a {
   transition: opacity 160ms ease, transform 160ms ease;
 }
 
-.avatar-entry:hover .avatar-popover {
+.avatar-popover::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -0.75rem;
+  height: 0.75rem;
+}
+
+.avatar-entry:hover .avatar-popover,
+.avatar-entry:focus-within .avatar-popover {
   opacity: 1;
   pointer-events: auto;
   transform: translateY(0);
@@ -423,6 +456,60 @@ a {
 .avatar-popover-links a:hover {
   transform: translateX(2px);
   border-color: var(--line-strong);
+}
+
+.theme-toggle-group {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.3rem;
+  padding: 0.3rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-card) 86%, var(--panel) 14%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.theme-toggle-option {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.2rem;
+  padding: 0.45rem 0.35rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    background 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.theme-toggle-option:hover,
+.theme-toggle-option:focus-visible {
+  color: var(--text);
+  outline: none;
+}
+
+.theme-toggle-option.is-active {
+  color: var(--text);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--surface-card) 100%, transparent),
+    color-mix(in srgb, var(--surface-card) 90%, var(--accent) 10%)
+  );
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.12) inset,
+    0 8px 18px rgba(6, 8, 13, 0.14);
 }
 
 .top-search-form {
@@ -632,8 +719,8 @@ a {
   border-radius: var(--radius-lg);
   background: var(--surface-card);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.45) inset,
-    0 8px 24px rgba(80, 88, 104, 0.05);
+    0 1px 0 rgba(255, 255, 255, 0.08) inset,
+    0 10px 30px rgba(6, 8, 13, 0.22);
 }
 
 .note-card.warm {
@@ -1266,6 +1353,41 @@ a {
   text-underline-offset: 0.2em;
 }
 
+.project-article-body {
+  max-width: none;
+  display: grid;
+  gap: 1.35rem;
+}
+
+.project-article-body > :where(h2, h3, p, ul, ol, blockquote) {
+  max-width: 72ch;
+}
+
+.project-article-body h2,
+.project-article-body h3 {
+  margin: 0.3rem 0 0;
+  font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  line-height: 1.1;
+}
+
+.project-article-body h2 {
+  font-size: clamp(1.35rem, 2.4vw, 1.9rem);
+}
+
+.project-article-body h3 {
+  font-size: clamp(1.1rem, 2vw, 1.4rem);
+}
+
+.project-article-body img {
+  display: block;
+  width: min(100%, 78rem);
+  margin: 0.2rem 0;
+  border: 1px solid var(--line);
+  border-radius: 1.1rem;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
 .article-pagination {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1502,10 +1624,6 @@ a {
 
 .project-article-card {
   background: var(--surface-card);
-}
-
-.project-article-body {
-  max-width: 72ch;
 }
 
 .tag-hero-row,
