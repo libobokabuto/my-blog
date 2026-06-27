@@ -5,10 +5,11 @@ use content::{
     AdminContentDetail, AdminContentFact, AdminContentIssue, AdminContentListItem,
     AdminContentTypeSummary, AdminDashboardOverview, AdminSearchOverview, AdminStatsOverview,
     AdminSummaryStat, AdminSyncOverview, AdminTasksOverview, ArchiveOverview, ArchiveYearGroup,
-    BlogPost, BlogPostSummary, HomeActivityItem, HomeOverview, HomeStat, MetricSnapshot,
-    NoteBoardSummary, NoteEntry, NoteSummary, ProjectEntry, ProjectSummary, RelatedContentItem,
-    SearchQueryDiagnostic, SearchRebuildRecord, SearchResult, SeriesPage, SyncRunRecord,
-    SyncSourceRecord, TagArchive, TagArchiveItem, TagOverviewItem, TagsOverview, TaskRunRecord,
+    BlogPost, BlogPostSummary, ContributionCell, ContributionMonthLabel, HomeActivityItem,
+    HomeOverview, MetricSnapshot, NoteBoardSummary, NoteEntry, NoteSummary, ProjectEntry,
+    ProjectSummary, RelatedContentItem, SearchQueryDiagnostic, SearchRebuildRecord, SearchResult,
+    SeriesPage, SyncRunRecord, SyncSourceRecord, TagArchive, TagArchiveItem, TagOverviewItem,
+    TagsOverview, TaskRunRecord,
 };
 use leptos::prelude::*;
 use leptos_meta::{provide_meta_context, Link, Meta, Stylesheet, Title};
@@ -23,6 +24,8 @@ use std::collections::BTreeMap;
 use leptos::config::LeptosOptions;
 
 const DEFAULT_SITE_URL: &str = "http://127.0.0.1:3000";
+const STYLESHEET_VERSION: &str = "20260625-catppuccin";
+const AVATAR_IMAGE_PATH: &str = "/images/2fb011faf0a8a663c5424203cc3ebd94.jpg";
 
 #[cfg(feature = "ssr")]
 pub fn shell(options: LeptosOptions) -> impl IntoView {
@@ -46,9 +49,10 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
 #[component]
 pub fn App() -> impl IntoView {
     provide_meta_context();
+    let stylesheet_href = format!("/pkg/my-blog.css?v={STYLESHEET_VERSION}");
 
     view! {
-        <Stylesheet id="leptos" href="/pkg/my-blog.css" />
+        <Stylesheet id="leptos" href=stylesheet_href />
         <Title text="Wen's Field Notes" />
         <Meta
             name="description"
@@ -163,35 +167,70 @@ fn PageHeadExtras(
 #[component]
 fn SiteHeader() -> impl IntoView {
     view! {
-        <header class="topbar">
-            <a href="/" class="brand">
-                <span class="brand-mark">"W"</span>
-                <span class="brand-copy">
-                    <strong>"Wen's Field Notes"</strong>
-                    <small>"Leptos SSR + Markdown"</small>
-                </span>
-            </a>
+        <header class="topbar topbar-v2">
+            <div class="topbar-layout">
+                <nav class="topnav topnav-v2 topbar-nav" attr:aria-label="主导航">
+                    <NavLink href="/" label="首页" hint="回到内容入口与精选阅读。" />
+                    <NavLink href="/blog" label="博客" hint="正式文章与阶段性输出。" />
+                    <NavLink href="/notes" label="笔记" hint="学习记录、实验过程和草稿想法。" />
+                    <NavLink href="/projects" label="项目" hint="长期项目、进度和结果。" />
+                </nav>
 
-            <nav class="topnav" aria-label="主导航">
-                <NavLink href="/" label="首页" />
-                <NavLink href="/me" label="个人主页" />
-                <NavLink href="/tags" label="标签" />
-                <NavLink href="/archive" label="归档" />
-                <NavLink href="/blog" label="博客" />
-                <NavLink href="/notes" label="笔记" />
-                <NavLink href="/projects" label="项目" />
-                <NavLink href="/search" label="搜索" />
-                <NavLink href="/about" label="关于" />
-            </nav>
+                <div class="topbar-search-slot">
+                    <form action="/search" method="get" class="top-search-form" role="search">
+                        <input
+                            class="search-input top-search-input"
+                            type="search"
+                            name="q"
+                            placeholder="搜索博客、笔记、项目..."
+                            attr:aria-label="全局搜索"
+                        />
+                    </form>
+                </div>
+
+                <div class="topbar-profile-slot">
+                    <div class="avatar-entry">
+                        <A href="/me" attr:class="top-avatar-link" attr:aria-label="进入主页">
+                            <img
+                                class="top-avatar-image"
+                                src=AVATAR_IMAGE_PATH
+                                alt="站点头像"
+                            />
+                        </A>
+                        <div class="avatar-popover">
+                            <div class="avatar-popover-head">
+                                <img
+                                    class="avatar-popover-image"
+                                    src=AVATAR_IMAGE_PATH
+                                    alt="站点头像"
+                                />
+                                <div>
+                                    <strong>"主页"</strong>
+                                    <p>"从这里看最近更新和主要内容。"</p>
+                                </div>
+                            </div>
+                            <div class="avatar-popover-links">
+                                <A href="/me">"查看主页"</A>
+                                <A href="/blog">"进入博客"</A>
+                                <A href="/notes">"翻看笔记"</A>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </header>
     }
 }
 
 #[component]
-fn NavLink(href: &'static str, label: &'static str) -> impl IntoView {
-    view! { <a href=href>{label}</a> }
+fn NavLink(href: &'static str, label: &'static str, hint: &'static str) -> impl IntoView {
+    view! {
+        <A href=href attr:class="nav-link-with-hint">
+            <span>{label}</span>
+            <small class="nav-hover-card">{hint}</small>
+        </A>
+    }
 }
-
 #[component]
 fn HomePage() -> impl IntoView {
     let home_overview = Resource::new_blocking(|| (), |_| async move { get_home_overview().await });
@@ -200,45 +239,24 @@ fn HomePage() -> impl IntoView {
         <Title text="首页 | Wen's Field Notes" />
         <Meta
             name="description"
-            content="查看这个内容驱动的 Rust 个人站首页，快速进入个人主页、博客、笔记、项目与搜索入口。"
+            content="查看这个内容驱动的 Rust 个人站首页，快速进入公开工作台、博客、笔记、项目与搜索入口。"
         />
         <PageHeadExtras
             title="首页 | Wen's Field Notes".to_string()
-            description="查看这个内容驱动的 Rust 个人站首页，快速进入个人主页、博客、笔记、项目与搜索入口。".to_string()
+            description="查看这个内容驱动的 Rust 个人站首页，快速进入公开工作台、博客、笔记、项目与搜索入口。".to_string()
             canonical_path="/".to_string()
         />
-        <section class="preview-section hero">
-            <div class="section-kicker">"首页"</div>
-            <div class="hero-grid">
-                <div class="hero-copy">
-                    <p class="eyebrow">"`v1.0` 已把这个站点收束成可运行、可部署的个人内容系统。"</p>
-                    <h1>"首页负责欢迎你进来，`/me` 负责把我最近在做什么摊开给你看。"</h1>
-                    <p class="lede">
-                        "现在的重点不再只是把页面补齐，而是把内容入口、最近动态、主题组织和轻量统计接成一张真正可继续生长的公开工作台。"
-                    </p>
-                    <div class="hero-actions">
-                        <A href="/me" attr:class="button primary">"进入个人主页"</A>
-                        <A href="/blog" attr:class="button ghost">"阅读博客"</A>
-                        <A href="/search" attr:class="button ghost">"站内搜索"</A>
-                    </div>
+        <section class="preview-section hero home-section">
+            <div class="home-hero-copy">
+                <div class="section-kicker">"首页"</div>
+                <p class="eyebrow">"Landing / content first"</p>
+                <h1>"先找到值得读的内容，再决定要不要继续认识我。"</h1>
+                <p class="lede">"先看文章、笔记和项目，再决定要不要继续逛下去。"</p>
+                <div class="hero-actions">
+                    <A href="/blog" attr:class="button primary">"先读博客"</A>
+                    <A href="/notes" attr:class="button ghost">"再看笔记"</A>
+                    <A href="/me" attr:class="button ghost">"了解我现在在做什么"</A>
                 </div>
-
-                <aside class="hero-aside">
-                    <div class="note-card warm">
-                        <span class="meta-label">"当前阶段"</span>
-                        <h2>"第五版 · `v1.0` 收尾完成"</h2>
-                        <p>"这一轮已经把 `/me`、首页、about、blog、notes、projects 的关系整理成统一站点结构，重点转到真实运行、部署与长期维护。"</p>
-                    </div>
-
-                    <div class="note-card">
-                        <span class="meta-label">"本轮入口"</span>
-                        <ul>
-                            <li><A href="/me">"先去 `/me` 看工作台"</A></li>
-                            <li><A href="/about">"再看这个站为什么这样做"</A></li>
-                            <li><A href="/projects">"最后回到项目与内容现场"</A></li>
-                        </ul>
-                    </div>
-                </aside>
             </div>
 
             <Suspense fallback=move || view! { <PageLoading label="正在整理首页内容..." /> }>
@@ -259,102 +277,63 @@ fn HomePreview(overview: HomeOverview) -> impl IntoView {
         latest_posts,
         latest_notes,
         featured_project,
-        recent_activity,
         focus_tags,
-        stats,
+        ..
     } = overview;
 
     view! {
         <>
-            <div class="home-entry-grid">
-                <article class="panel entry-panel">
+            <div class="home-feature-grid">
+                <article class="panel home-editorial-panel">
                     <div class="panel-head">
-                        <span class="meta-label">"站点入口"</span>
-                        <A href="/me">"打开工作台"</A>
+                        <span class="meta-label">"内容方向"</span>
+                        <span>"Wen's Field Notes"</span>
                     </div>
-                    <div class="entry-card-list">
-                        {[
-                            ("/me", "个人主页", "集中看当前状态、最近动态和轻量统计。"),
-                            ("/tags", "标签总览", "按主题密度进入博客和笔记内容。"),
-                            ("/archive", "时间归档", "沿着年份与更新节奏继续浏览。"),
-                            ("/blog", "博客", "阅读完整文章与阶段性输出。"),
-                            ("/notes", "笔记", "查看学习过程、思路草稿与阶段记录。"),
-                            ("/projects", "项目", "跟进长期项目的现场与结果。"),
-                            ("/about", "关于", "了解站点背景、方法和当前边界。"),
-                        ]
-                            .into_iter()
-                            .map(|(href, title, summary)| {
-                                view! {
-                                    <A href=href attr:class="entry-card">
-                                        <strong>{title}</strong>
-                                        <span>{summary}</span>
-                                    </A>
-                                }
-                            })
-                            .collect_view()}
+                    <h2>"Rust 学习、工程实践，还有正在推进的个人项目。"</h2>
+                    <div class="tag-row compact-tags">
+                        <A href="/blog" attr:class="chip soft">"全部博客"</A>
+                        <A href="/notes" attr:class="chip soft">"全部笔记"</A>
+                        <A href="/projects" attr:class="chip soft">"项目现场"</A>
+                        <A href="/me" attr:class="chip soft">"主页"</A>
                     </div>
                 </article>
 
-                <article class="panel feature-panel">
+                <article class="panel home-side-panel">
                     <div class="panel-head">
-                        <span class="meta-label">"最近动态预览"</span>
-                        <A href="/me">"查看更多"</A>
+                        <span class="meta-label">"继续浏览"</span>
+                        <A href="/search">"去搜索"</A>
                     </div>
-                    <div class="activity-list compact">
-                        {recent_activity
-                            .into_iter()
-                            .take(3)
-                            .map(|item| {
-                                view! {
-                                    <A href=item.href attr:class="activity-card">
-                                        <div class="activity-topline">
-                                            <span class="meta-label">{item.content_type}</span>
-                                            <span class="meta-label">{item.date.format("%Y.%m.%d").to_string()}</span>
-                                        </div>
-                                        <strong>{item.title}</strong>
-                                        <span>{item.summary}</span>
-                                    </A>
-                                }
-                            })
-                            .collect_view()}
-                    </div>
-                </article>
-
-                <article class="panel compact">
-                    <div class="panel-head">
-                        <span class="meta-label">"轻量统计"</span>
-                        <A href="/me">"去主页"</A>
-                    </div>
-                    <div class="stats-grid compact">
-                        {stats
-                            .into_iter()
-                            .take(3)
-                            .map(|stat| {
-                                view! {
-                                    <A href=stat.href attr:class="stat-card">
-                                        <span class="meta-label">{stat.label}</span>
-                                        <strong>{stat.value}</strong>
-                                        <small>{stat.detail}</small>
-                                    </A>
-                                }
-                            })
-                            .collect_view()}
+                    <div class="mini-list">
+                        <A href="/me" attr:class="mini-list-link">
+                            <strong>"主页"</strong>
+                            <span>"看状态、更新和常用入口。"</span>
+                        </A>
+                        <A href="/tags" attr:class="mini-list-link">
+                            <strong>"按主题浏览"</strong>
+                            <span>"按主题继续找内容。"</span>
+                        </A>
+                        <A href="/archive" attr:class="mini-list-link">
+                            <strong>"按时间浏览"</strong>
+                            <span>"按时间线回看更新。"</span>
+                        </A>
                     </div>
                 </article>
             </div>
 
-            <div class="home-panels v3">
-                <article class="panel split-panel">
+            <div class="home-panels v3 home-preview-grid">
+                <article class="panel split-panel content-preview-card latest-posts-panel">
                     <div class="panel-head">
-                        <span class="meta-label">"最近博客"</span>
-                        <A href="/blog">"更多文章"</A>
+                        <span class="meta-label">"先读这两篇"</span>
+                        <A href="/blog">"查看全部博客"</A>
                     </div>
                     <div class="mini-list">
                         {latest_posts
                             .into_iter()
+                            .take(2)
                             .map(|post| {
                                 view! {
                                     <A href=format!("/blog/{}", post.slug) attr:class="mini-list-link">
+                                        <span class="meta-badge badge-blog">"BLOG"</span>
                                         <strong>{post.title}</strong>
                                         <span>{post.summary}</span>
                                     </A>
@@ -364,17 +343,19 @@ fn HomePreview(overview: HomeOverview) -> impl IntoView {
                     </div>
                 </article>
 
-                <article class="panel feature-panel compact">
+                <article class="panel feature-panel compact content-preview-card">
                     <div class="panel-head">
-                        <span class="meta-label">"最近笔记"</span>
-                        <A href="/notes">"全部笔记"</A>
+                        <span class="meta-label">"顺手再看"</span>
+                        <A href="/notes">"查看全部笔记"</A>
                     </div>
                     <div class="mini-list">
                         {latest_notes
                             .into_iter()
+                            .take(2)
                             .map(|note| {
                                 view! {
                                     <A href=format!("/notes/{}", note.slug) attr:class="mini-list-link">
+                                        <span class="meta-badge badge-note">"NOTE"</span>
                                         <strong>{note.title}</strong>
                                         <span>{note.summary}</span>
                                     </A>
@@ -384,15 +365,16 @@ fn HomePreview(overview: HomeOverview) -> impl IntoView {
                     </div>
                 </article>
 
-                <article class="panel feature-panel compact">
+                <article class="panel feature-panel compact content-preview-card">
                     <div class="panel-head">
-                        <span class="meta-label">"重点项目"</span>
-                        <A href="/projects">"项目页"</A>
+                        <span class="meta-label">"当前项目"</span>
+                        <A href="/projects">"进入项目页"</A>
                     </div>
                     {featured_project
                         .map(|project| {
                             view! {
                                 <A href=format!("/projects/{}", project.slug) attr:class="project-feature">
+                                    <span class="meta-badge badge-project">"PROJECT"</span>
                                     <h3>{project.title}</h3>
                                     <p class="blog-meta">{project.status.clone()}</p>
                                     <p>{project.stack.join(" / ")}</p>
@@ -405,17 +387,17 @@ fn HomePreview(overview: HomeOverview) -> impl IntoView {
                 </article>
             </div>
 
-            <div class="home-reference-grid">
+            <div class="home-reference-grid compact-home-footer">
                 <article class="panel manifesto-panel">
                     <div class="panel-head">
-                        <span class="meta-label">"`v1.0` 重点"</span>
-                        <span>"把内容组织成系统"</span>
+                        <span class="meta-label">"关于我"</span>
+                        <span>"当前关注"</span>
                     </div>
-                    <p>"这个版本的重点不是继续扩张页面，而是把个人主页、内容入口、后台与运行链路整理成真正可部署的个人内容站。"</p>
+                    <p>"主要在写 Rust、Leptos、个人项目和学习过程里的实际问题。"</p>
                     <div class="manifesto-list">
-                        <span>"`/me` 负责公开工作台，首页负责迎接访问与总览。"</span>
-                        <span>"最近动态和轻量统计先基于本地 Markdown 聚合。"</span>
-                        <span>"后续关联、搜索和治理都会复用这层服务端装配结构。"</span>
+                        <span>"正式内容放在博客。"</span>
+                        <span>"过程记录放在笔记。"</span>
+                        <span>"长期推进的东西放在项目页。"</span>
                     </div>
                 </article>
 
@@ -432,35 +414,29 @@ fn HomePreview(overview: HomeOverview) -> impl IntoView {
                             })
                             .collect_view()}
                     </div>
-                    <div class="timeline-list">
-                        <span>"当前已经接入数据库、后台与持久化统计，但仍然不扩展到用户系统和平台化能力。"</span>
-                        <span>"最近动态与统计已经接入真实后端链路，便于继续维护和核对运行状态。"</span>
-                        <span>"这一步把 `/tags` 和 `/archive` 接起来，下一轮更适合继续推进内容关联。"</span>
-                    </div>
                 </article>
             </div>
         </>
     }
 }
-
 #[component]
 fn MePage() -> impl IntoView {
     let home_overview = Resource::new_blocking(|| (), |_| async move { get_home_overview().await });
 
     view! {
-        <Title text="个人主页 | Wen's Field Notes" />
+        <Title text="主页 | Wen's Field Notes" />
         <Meta
             name="description"
             content="查看我的公开工作台：当前状态、内容入口、最近动态、重点项目与轻量统计。"
         />
         <PageHeadExtras
-            title="个人主页 | Wen's Field Notes".to_string()
+            title="主页 | Wen's Field Notes".to_string()
             description="查看我的公开工作台：当前状态、内容入口、最近动态、重点项目与轻量统计。".to_string()
             canonical_path="/me".to_string()
         />
         <section class="preview-section me-section">
-            <div class="section-kicker">"个人主页"</div>
-            <Suspense fallback=move || view! { <PageLoading label="正在整理个人主页..." /> }>
+            <div class="section-kicker">"主页"</div>
+            <Suspense fallback=move || view! { <PageLoading label="正在整理主页..." /> }>
                 {move || {
                     home_overview.get().map(|result| match result {
                         Ok(overview) => view! { <MeWorkbench overview=overview /> }.into_any(),
@@ -475,63 +451,98 @@ fn MePage() -> impl IntoView {
 #[component]
 fn MeWorkbench(overview: HomeOverview) -> impl IntoView {
     let HomeOverview {
-        latest_posts,
-        latest_notes,
         featured_project,
         recent_activity,
         focus_tags,
         stats,
+        contribution_cells,
+        contribution_months,
+        contribution_total,
+        ..
     } = overview;
+
+    let latest_update = stats
+        .iter()
+        .find(|stat| stat.label == "最近更新")
+        .map(|stat| stat.value.clone())
+        .unwrap_or_else(|| "暂无".to_string());
 
     view! {
         <>
-            <div class="me-hero-grid">
-                <div class="hero-copy">
-                    <p class="eyebrow">"公开工作台 / public workbench"</p>
-                    <h1>"这里比 about 更接近现场，比首页更接近我现在真正花时间的地方。"</h1>
-                    <p class="lede">
-                        "我在用 Rust、Leptos SSR、MySQL、Redis 和 Markdown 把这个站点做成一个可长期维护的个人内容系统。现在的重点不是继续堆功能，而是保证内容发布、搜索、统计、任务和同步这些基础链路真实可运行。"
-                    </p>
-                    <div class="hero-actions">
-                        <A href="/blog" attr:class="button primary">"看最新文章"</A>
-                        <A href="/notes" attr:class="button ghost">"看学习笔记"</A>
-                        <A href="/projects" attr:class="button ghost">"看项目现场"</A>
+            <div class="profile-shell">
+                <aside class="panel profile-card">
+                    <div class="profile-avatar-frame">
+                        <img class="profile-avatar-image" src=AVATAR_IMAGE_PATH alt="主页头像" />
                     </div>
-                </div>
-
-                <aside class="hero-aside">
-                    <div class="note-card warm">
-                        <span class="meta-label">"Now"</span>
-                        <h2>"个人主页、内容组织、搜索与治理前置"</h2>
-                        <p>"这一轮优先把内容站的枢纽层搭起来：先组织、再关联、再搜索、最后再判断后端什么时候真正值得引入。"</p>
+                    <h1>"Wen's Field Notes"</h1>
+                    <p class="profile-meta">{format!("最近更新 {}", latest_update)}</p>
+                    <div class="profile-facts">
+                        {stats
+                            .into_iter()
+                            .map(|stat| {
+                                view! {
+                                    <A href=stat.href attr:class="profile-fact">
+                                        <strong>{stat.value}</strong>
+                                        <span>{stat.label}</span>
+                                    </A>
+                                }
+                            })
+                            .collect_view()}
                     </div>
-
-                    <div class="note-card">
-                        <span class="meta-label">"页面分工"</span>
-                        <ul>
-                            <li>"首页：欢迎访问与全站总览"</li>
-                            <li>"个人主页：当前状态、内容入口、最近动态"</li>
-                            <li>"About：背景、方法论与版本边界"</li>
-                        </ul>
+                    <div class="tag-row compact-tags profile-tag-row">
+                        {focus_tags
+                            .into_iter()
+                            .map(|tag| {
+                                view! { <A href=format!("/tags/{}", tag) attr:class="chip soft">{tag}</A> }
+                            })
+                            .collect_view()}
+                    </div>
+                    <div class="hero-actions profile-actions">
+                        <A href="/blog" attr:class="button primary">"博客"</A>
+                        <A href="/notes" attr:class="button ghost">"笔记"</A>
+                        <A href="/projects" attr:class="button ghost">"项目"</A>
                     </div>
                 </aside>
+
+                <article class="panel contribution-panel">
+                    <div class="panel-head">
+                        <span class="meta-label">"状态记录"</span>
+                        <span>{format!("最近一年 {} 次内容更新", contribution_total)}</span>
+                    </div>
+                    <ContributionHeatmap
+                        cells=contribution_cells
+                        months=contribution_months
+                        total=contribution_total
+                    />
+                </article>
             </div>
 
-            <div class="me-layout">
-                <article class="panel">
+            <div class="me-layout profile-content-grid">
+                <article class="panel full-span">
                     <div class="panel-head">
-                        <span class="meta-label">"内容入口"</span>
-                        <A href="/">"回首页"</A>
+                        <span class="meta-label">"最近更新"</span>
+                        <A href="/search">"继续查找"</A>
                     </div>
-                    <div class="entry-card-list">
+                    <div class="activity-list">
+                        {recent_activity
+                            .into_iter()
+                            .map(|item| view! { <ActivityCard item=item /> })
+                            .collect_view()}
+                    </div>
+                </article>
+            </div>
+
+            <div class="me-layout profile-detail-grid">
+                <article class="panel profile-utility-panel">
+                    <div class="panel-head">
+                        <span class="meta-label">"继续浏览"</span>
+                        <span>"补充入口"</span>
+                    </div>
+                    <div class="entry-card-list compact-entry-grid">
                         {[
-                            ("/tags", "标签总览", "按主题查看博客与笔记的聚合入口。"),
-                            ("/archive", "时间归档", "按年份浏览最近更新与长期积累。"),
-                            ("/blog", "博客", "正式输出、文章化表达与阶段性沉淀。"),
-                            ("/notes", "笔记", "学习过程、实验记录与还在形成中的想法。"),
-                            ("/projects", "项目", "长期项目的上下文、状态和结果。"),
-                            ("/search", "搜索", "直接按关键词穿透 blog / notes / projects。"),
-                            ("/about", "About", "为什么做、怎么做、当前明确不做什么。"),
+                            ("/search", "搜索", "直接查内容"),
+                            ("/archive", "归档", "按时间回看"),
+                            ("/tags", "标签", "按主题进入"),
                         ]
                             .into_iter()
                             .map(|(href, title, summary)| {
@@ -548,35 +559,7 @@ fn MeWorkbench(overview: HomeOverview) -> impl IntoView {
 
                 <article class="panel">
                     <div class="panel-head">
-                        <span class="meta-label">"最近动态"</span>
-                        <A href="/search">"继续找内容"</A>
-                    </div>
-                    <div class="activity-list">
-                        {recent_activity
-                            .into_iter()
-                            .map(|item| view! { <ActivityCard item=item /> })
-                            .collect_view()}
-                    </div>
-                </article>
-            </div>
-
-            <div class="me-layout secondary">
-                <article class="panel">
-                    <div class="panel-head">
-                        <span class="meta-label">"轻量统计"</span>
-                        <span>"内容驱动，不做持久化"</span>
-                    </div>
-                    <div class="stats-grid">
-                        {stats
-                            .into_iter()
-                            .map(|stat| view! { <StatCard stat=stat /> })
-                            .collect_view()}
-                    </div>
-                </article>
-
-                <article class="panel">
-                    <div class="panel-head">
-                        <span class="meta-label">"当前重点项目"</span>
+                        <span class="meta-label">"当前项目"</span>
                         <A href="/projects">"全部项目"</A>
                     </div>
                     {featured_project
@@ -585,8 +568,8 @@ fn MeWorkbench(overview: HomeOverview) -> impl IntoView {
                                 <A href=format!("/projects/{}", project.slug) attr:class="project-feature expanded">
                                     <span class="meta-label">{project.status.clone()}</span>
                                     <h3>{project.title}</h3>
-                                    <p>{project.summary}</p>
                                     <small>{project.stack.join(" / ")}</small>
+                                    <p>{project.summary}</p>
                                 </A>
                             }
                                 .into_any()
@@ -594,66 +577,81 @@ fn MeWorkbench(overview: HomeOverview) -> impl IntoView {
                         .unwrap_or_else(|| view! { <p>"项目内容正在整理中。"</p> }.into_any())}
                 </article>
             </div>
-
-            <div class="me-layout tertiary">
-                <article class="panel">
-                    <div class="panel-head">
-                        <span class="meta-label">"关注主题"</span>
-                        <A href="/search">"去搜索页"</A>
-                    </div>
-                    <div class="tag-row compact-tags">
-                        {focus_tags
-                            .into_iter()
-                            .map(|tag| {
-                                view! { <A href=format!("/tags/{}", tag) attr:class="chip soft">{tag}</A> }
-                            })
-                            .collect_view()}
-                    </div>
-                </article>
-
-                <article class="panel">
-                    <div class="panel-head">
-                        <span class="meta-label">"最近入口"</span>
-                        <span>"直接继续阅读"</span>
-                    </div>
-                    <div class="mini-columns">
-                        <div class="mini-list">
-                            <span class="meta-label">"博客"</span>
-                            {latest_posts
-                                .into_iter()
-                                .take(2)
-                                .map(|post| {
-                                    view! {
-                                        <A href=format!("/blog/{}", post.slug) attr:class="mini-list-link">
-                                            <strong>{post.title}</strong>
-                                            <span>{post.summary}</span>
-                                        </A>
-                                    }
-                                })
-                                .collect_view()}
-                        </div>
-                        <div class="mini-list">
-                            <span class="meta-label">"笔记"</span>
-                            {latest_notes
-                                .into_iter()
-                                .take(2)
-                                .map(|note| {
-                                    view! {
-                                        <A href=format!("/notes/{}", note.slug) attr:class="mini-list-link">
-                                            <strong>{note.title}</strong>
-                                            <span>{note.summary}</span>
-                                        </A>
-                                    }
-                                })
-                                .collect_view()}
-                        </div>
-                    </div>
-                </article>
-            </div>
         </>
     }
 }
 
+#[component]
+fn ContributionHeatmap(
+    cells: Vec<ContributionCell>,
+    months: Vec<ContributionMonthLabel>,
+    total: usize,
+) -> impl IntoView {
+    let total_weeks = cells.last().map(|cell| cell.week_index + 1).unwrap_or(0);
+    let mut month_lookup = BTreeMap::new();
+    for month in months {
+        month_lookup.insert(month.week_index, month.label);
+    }
+
+    view! {
+        <div class="contribution-shell">
+            <div class="contribution-months">
+                {(0..total_weeks)
+                    .map(|week_index| {
+                        let label = month_lookup.get(&week_index).cloned().unwrap_or_default();
+                        view! { <span>{label}</span> }
+                    })
+                    .collect_view()}
+            </div>
+            <div class="contribution-body">
+                <div class="contribution-day-labels">
+                    <span>"一"</span>
+                    <span>"三"</span>
+                    <span>"五"</span>
+                </div>
+                <div class="contribution-grid">
+                    {(0..total_weeks)
+                        .map(|week_index| {
+                            let week_cells = cells
+                                .iter()
+                                .filter(|cell| cell.week_index == week_index)
+                                .cloned()
+                                .collect::<Vec<_>>();
+                            view! {
+                                <div class="contribution-week">
+                                    {week_cells
+                                        .into_iter()
+                                        .map(|cell| {
+                                            let level_class = format!("contribution-cell level-{}", cell.level);
+                                            let title = if cell.count == 0 {
+                                                format!("{} · 无更新", cell.date.format("%Y-%m-%d"))
+                                            } else {
+                                                format!("{} · {} 条更新", cell.date.format("%Y-%m-%d"), cell.count)
+                                            };
+                                            view! { <span class=level_class title=title></span> }
+                                        })
+                                        .collect_view()}
+                                </div>
+                            }
+                        })
+                        .collect_view()}
+                </div>
+            </div>
+            <div class="contribution-foot">
+                <span>{format!("总计 {} 次", total)}</span>
+                <div class="contribution-legend">
+                    <span>"少"</span>
+                    <i class="contribution-cell level-0"></i>
+                    <i class="contribution-cell level-1"></i>
+                    <i class="contribution-cell level-2"></i>
+                    <i class="contribution-cell level-3"></i>
+                    <i class="contribution-cell level-4"></i>
+                    <span>"多"</span>
+                </div>
+            </div>
+        </div>
+    }
+}
 #[component]
 fn ActivityCard(item: HomeActivityItem) -> impl IntoView {
     view! {
@@ -664,17 +662,6 @@ fn ActivityCard(item: HomeActivityItem) -> impl IntoView {
             </div>
             <strong>{item.title}</strong>
             <span>{item.summary}</span>
-        </A>
-    }
-}
-
-#[component]
-fn StatCard(stat: HomeStat) -> impl IntoView {
-    view! {
-        <A href=stat.href attr:class="stat-card">
-            <span class="meta-label">{stat.label}</span>
-            <strong>{stat.value}</strong>
-            <small>{stat.detail}</small>
         </A>
     }
 }
@@ -694,13 +681,13 @@ fn BlogListPage() -> impl IntoView {
             description="按时间与标签浏览博客文章，查看这个个人内容站里已经正式发布的内容。".to_string()
             canonical_path="/blog".to_string()
         />
-        <section class="preview-section">
+        <section class="preview-section plain-section">
             <div class="section-heading">
                 <div>
                     <div class="section-kicker">"博客列表"</div>
-                    <h2>"正式文章应该像作品被陈列，而不是像日志被堆叠。"</h2>
+                    <h2>"博客"</h2>
                 </div>
-                <p>"这里按时间组织文章，同时把标签入口直接接入归档页，让继续按主题阅读更自然。"</p>
+                <p>"按时间与主题继续看正式文章。"</p>
             </div>
 
             <Suspense fallback=move || view! { <PageLoading label="正在载入博客列表..." /> }>
@@ -747,18 +734,13 @@ fn BlogListContent(posts: Vec<BlogPostSummary>) -> impl IntoView {
                 {featured_post
                     .map(|post| {
                         view! {
-                            <article class="blog-card featured editorial-card">
-                                <div class="editorial-copy">
-                                    <p class="blog-meta">{format_meta_line(&post.date, &post.tags)}</p>
-                                    <h3>
-                                        <A href=format!("/blog/{}", post.slug)>{post.title}</A>
-                                    </h3>
-                                    <p>{post.summary}</p>
-                                </div>
-                                <div class="editorial-side">
-                                    <span class="meta-label">"阅读提示"</span>
-                                    <p>"先抓标题和摘要，再决定是否深入阅读，这是列表页最重要的节奏控制。"</p>
-                                </div>
+                            <article class="blog-card featured featured-card">
+                                <span class="meta-badge badge-blog">"BLOG"</span>
+                                <p class="blog-meta">{format_meta_line(&post.date, &post.tags)}</p>
+                                <h3>
+                                    <A href=format!("/blog/{}", post.slug)>{post.title}</A>
+                                </h3>
+                                <p>{post.summary}</p>
                             </article>
                         }
                     })}
@@ -769,6 +751,7 @@ fn BlogListContent(posts: Vec<BlogPostSummary>) -> impl IntoView {
                         .map(|post| {
                             view! {
                                 <article class="blog-card compact-card">
+                                    <span class="meta-badge badge-blog">"BLOG"</span>
                                     <p class="blog-meta">{format_meta_line(&post.date, &post.tags)}</p>
                                     <h3>
                                         <A href=format!("/blog/{}", post.slug)>{post.title}</A>
@@ -792,6 +775,7 @@ fn BlogListContent(posts: Vec<BlogPostSummary>) -> impl IntoView {
 
                         view! {
                             <article class=class>
+                                <span class="meta-badge badge-blog">"BLOG"</span>
                                 <p class="blog-meta">{format_meta_line(&post.date, &post.tags)}</p>
                                 <h3>
                                     <A href=format!("/blog/{}", post.slug)>{post.title}</A>
@@ -928,7 +912,6 @@ fn BlogDetailContent(post: BlogPost) -> impl IntoView {
 #[component]
 fn NotesPage() -> impl IntoView {
     let notes = Resource::new_blocking(|| (), |_| async move { list_note_entries().await });
-    let boards = Resource::new_blocking(|| (), |_| async move { get_note_boards_overview().await });
 
     view! {
         <Title text="笔记 | Wen's Field Notes" />
@@ -941,23 +924,14 @@ fn NotesPage() -> impl IntoView {
             description="查看这个站点中的学习记录、实验结论与过程型笔记。".to_string()
             canonical_path="/notes".to_string()
         />
-        <section class="preview-section">
+        <section class="preview-section plain-section">
             <div class="section-heading">
                 <div>
                     <div class="section-kicker">"笔记"</div>
-                    <h2>"笔记比博客更轻、更快，也更接近学习过程本身。"</h2>
+                    <h2>"这里保留学习过程本身，不强迫每条记录都写成一篇正式文章。"</h2>
                 </div>
-                <p>"这里收集的是短判断、实验结论和阶段记录，不追求每篇都写成完整长文。现在笔记开始按 Rust、C++、Bochs 三个技术板块组织，并保留通用板块承接过程型记录。"</p>
+                <p>"笔记页优先可扫读性。现在按技术板块收拢，但不再用补丁式统计块打断阅读节奏，直接从条目开始。"</p>
             </div>
-
-            <Suspense fallback=move || view! { <PageLoading label="正在整理笔记板块..." /> }>
-                {move || {
-                    boards.get().map(|boards| match boards {
-                        Ok(boards) => view! { <NotesBoardOverview boards=boards /> }.into_any(),
-                        Err(error) => view! { <PageError message=error.to_string() /> }.into_any(),
-                    })
-                }}
-            </Suspense>
 
             <Suspense fallback=move || view! { <PageLoading label="正在载入笔记..." /> }>
                 {move || {
@@ -968,32 +942,6 @@ fn NotesPage() -> impl IntoView {
                 }}
             </Suspense>
         </section>
-    }
-}
-
-#[component]
-fn NotesBoardOverview(boards: Vec<NoteBoardSummary>) -> impl IntoView {
-    view! {
-        <div class="entry-card-list notes-board-grid">
-            {boards
-                .into_iter()
-                .map(|board| {
-                    view! {
-                        <div class="note-card admin-type-card">
-                            <span class="meta-label">{board.label.clone()}</span>
-                            <h3>{format!("{} 篇", board.total_count)}</h3>
-                            <p>{board.description.clone()}</p>
-                            <small class="board-footnote">
-                                {board
-                                    .latest_date
-                                    .map(|date| format!("最近更新：{}", date.format("%Y.%m.%d")))
-                                    .unwrap_or_else(|| "当前还没有内容，后续可以直接往这个板块补笔记。".to_string())}
-                            </small>
-                        </div>
-                    }
-                })
-                .collect_view()}
-        </div>
     }
 }
 
@@ -1014,20 +962,24 @@ fn NotesListContent(notes: Vec<NoteSummary>) -> impl IntoView {
     ordered_groups.extend(grouped.into_iter());
 
     view! {
-        <div class="entry-card-list notes-board-sections">
+        <div class="notes-board-sections compact-notes-layout">
             {ordered_groups
                 .into_iter()
                 .map(|(board, items)| {
+                    let item_count = items.len();
                     view! {
-                        <section class="editorial-card admin-block">
-                            <div class="section-heading compact">
+                        <section class="notes-group">
+                            <div class="notes-group-head">
                                 <div>
                                     <div class="section-kicker">"笔记板块"</div>
                                     <h2>{note_board_label(&board)}</h2>
                                 </div>
-                                <p>{note_board_description(&board)}</p>
+                                <div class="notes-group-meta">
+                                    <span class="meta-label">{format!("{} 条", item_count)}</span>
+                                    <p>{note_board_description(&board)}</p>
+                                </div>
                             </div>
-                            <div class="notes-grid">
+                            <div class="notes-timeline single-column">
                                 {if items.is_empty() {
                                     view! {
                                         <div class="note-card">
@@ -1042,7 +994,8 @@ fn NotesListContent(notes: Vec<NoteSummary>) -> impl IntoView {
                                             .into_iter()
                                             .map(|note| {
                                                 view! {
-                                                    <A href=format!("/notes/{}", note.slug) attr:class="note-entry">
+                                                    <A href=format!("/notes/{}", note.slug) attr:class="note-entry note-timeline-item">
+                                                        <span class="meta-badge badge-note">"NOTE"</span>
                                                         <p class="blog-meta">
                                                             {format!(
                                                                 "{} · {} · {}",
@@ -1212,13 +1165,13 @@ fn ProjectsPage() -> impl IntoView {
             description="浏览这个站点中的项目展示，了解当前在做什么、用什么做、进行到哪一步。".to_string()
             canonical_path="/projects".to_string()
         />
-        <section class="preview-section">
+        <section class="preview-section plain-section">
             <div class="section-heading">
                 <div>
                     <div class="section-kicker">"项目"</div>
-                    <h2>"项目页不是文章索引，而是把正在做的东西清楚地陈列出来。"</h2>
+                    <h2>"项目"</h2>
                 </div>
-                <p>"这一版把项目从列表扩展到详情，并按状态组织，让它更像持续维护中的作品档案。"</p>
+                <p>"按状态查看正在推进和已经归档的项目。"</p>
             </div>
 
             <Suspense fallback=move || view! { <PageLoading label="正在载入项目..." /> }>
@@ -1283,11 +1236,12 @@ fn ProjectsListContent(projects: Vec<ProjectSummary>) -> impl IntoView {
 fn ProjectCard(project: ProjectSummary) -> impl IntoView {
     view! {
         <article class="project-card">
-            <div class="panel-head">
-                <span class="meta-label">{project.status.clone()}</span>
+            <div class="project-card-head">
+                <span class="meta-badge badge-project">"PROJECT"</span>
+                <p class="blog-meta">{project.status.clone()}</p>
+                <h3>{project.title.clone()}</h3>
                 <span class="project-stack-inline">{project.stack.join(" / ")}</span>
             </div>
-            <h3>{project.title.clone()}</h3>
             <p>{project.summary.clone()}</p>
             <div class="tag-row">
                 {project
@@ -1298,7 +1252,7 @@ fn ProjectCard(project: ProjectSummary) -> impl IntoView {
             </div>
             <div class="project-links">
                 <A href=format!("/projects/{}", project.slug) attr:class="button ghost">
-                    "查看详情"
+                    "查看详情 →"
                 </A>
                 {project
                     .repo_url
@@ -1544,7 +1498,7 @@ fn SeriesPageContent(series: SeriesPage) -> impl IntoView {
             description=description_text
             canonical_path=format!("/series/{}", series.slug)
         />
-        <section class="preview-section series-shell">
+        <section class="preview-section plain-section series-shell">
             <div class="section-heading">
                 <div>
                     <div class="section-kicker">"系列页"</div>
@@ -1639,7 +1593,7 @@ fn TagsOverviewContent(overview: TagsOverview) -> impl IntoView {
             description=description_text
             canonical_path="/tags".to_string()
         />
-        <section class="preview-section tag-overview-shell">
+        <section class="preview-section plain-section tag-overview-shell">
             <div class="section-heading">
                 <div>
                     <div class="section-kicker">"标签总览"</div>
@@ -1669,7 +1623,7 @@ fn TagsOverviewContent(overview: TagsOverview) -> impl IntoView {
                 <div class="tag-row">
                     <A href="/blog" attr:class="chip soft">"博客"</A>
                     <A href="/notes" attr:class="chip soft">"笔记"</A>
-                    <A href="/me" attr:class="chip soft">"个人主页"</A>
+                    <A href="/me" attr:class="chip soft">"主页"</A>
                     <A href="/archive" attr:class="chip soft">"归档"</A>
                 </div>
             </div>
@@ -1726,7 +1680,7 @@ fn ArchiveOverviewContent(overview: ArchiveOverview) -> impl IntoView {
             description=description_text
             canonical_path="/archive".to_string()
         />
-        <section class="preview-section archive-overview-shell">
+        <section class="preview-section plain-section archive-overview-shell">
             <div class="section-heading">
                 <div>
                     <div class="section-kicker">"时间归档"</div>
@@ -1806,7 +1760,7 @@ fn TagArchiveContent(archive: TagArchive) -> impl IntoView {
             description=description_text.clone()
             canonical_path=format!("/tags/{}", archive.tag)
         />
-        <section class="preview-section tag-archive-shell">
+        <section class="preview-section plain-section tag-archive-shell">
             <div class="section-heading">
                 <div>
                     <div class="section-kicker">"标签归档"</div>
@@ -1869,9 +1823,12 @@ fn TagArchiveContent(archive: TagArchive) -> impl IntoView {
 
 #[component]
 fn ArchiveCard(item: TagArchiveItem) -> impl IntoView {
+    let (badge_text, badge_class) = content_badge_by_href(&item.href);
+
     view! {
         <A href=item.href.clone() attr:class="archive-card">
-            <p class="blog-meta">{format!("{} · {}", item.content_type, format_meta_line(&item.date, &item.tags))}</p>
+            <span class=format!("meta-badge {}", badge_class)>{badge_text}</span>
+            <p class="blog-meta">{format!("{} 路 {}", item.content_type, format_meta_line(&item.date, &item.tags))}</p>
             <h3>{item.title}</h3>
             <p>{item.summary}</p>
         </A>
@@ -1884,6 +1841,14 @@ fn SearchPage() -> impl IntoView {
     let query = Memo::new(move |_| query_map.with(|map| map.get("q").unwrap_or_default()));
     let type_filter = Memo::new(move |_| query_map.with(|map| map.get("type").unwrap_or_default()));
     let tag_filter = Memo::new(move |_| query_map.with(|map| map.get("tag").unwrap_or_default()));
+    let has_search_request = Memo::new(move |_| {
+        let query_value = query.get();
+        let type_value = type_filter.get();
+        let tag_value = tag_filter.get();
+        !query_value.trim().is_empty()
+            || !type_value.trim().is_empty()
+            || !tag_value.trim().is_empty()
+    });
     let search_results = Resource::new(
         move || (query.get(), type_filter.get(), tag_filter.get()),
         |(current_query, current_type, current_tag)| async move {
@@ -1910,44 +1875,61 @@ fn SearchPage() -> impl IntoView {
             canonical_path="/search".to_string()
             robots="noindex,follow".to_string()
         />
-        <section class="preview-section search-shell">
-            <div class="section-heading">
-                <div>
-                    <div class="section-kicker">"站内搜索"</div>
-                    <h2>"不想只靠时间线找内容时，搜索页应该给你一条更直接的路。"</h2>
-                </div>
-                <p>"搜索目前覆盖博客、笔记和项目，标题、摘要、正文和关键词检索都已经进入真实索引链路。"</p>
-            </div>
+        <section class="preview-section plain-section search-shell">
+            {move || {
+                if !has_search_request.get() {
+                    view! {
+                        <div class="loading-card search-idle-card">
+                            <span class="meta-label">"站内搜索"</span>
+                            <p>"顶部已经有全局搜索框了。输入关键词后，这里再专门展示结果、筛选和后续浏览路径。"</p>
+                        </div>
+                    }
+                        .into_any()
+                } else {
+                    view! {
+                        <>
+                            <div class="section-heading compact">
+                                <div>
+                                    <div class="section-kicker">"搜索结果"</div>
+                                    <h2>"先给你结果，再给你筛选。"</h2>
+                                </div>
+                                <p>"这个页面现在只负责承接真正的搜索请求，不再在空状态下重复摆一个大搜索框。"</p>
+                            </div>
 
-            <SearchForm
-                query=query.get_untracked()
-                type_filter=type_filter.get_untracked()
-                tag_filter=tag_filter.get_untracked()
-            />
-            <div class="tag-row">
-                <A href="/tags" attr:class="chip soft">"标签总览"</A>
-                <A href="/archive" attr:class="chip soft">"时间归档"</A>
-                <A href="/me" attr:class="chip soft">"个人主页"</A>
-            </div>
+                            <SearchForm
+                                query=query.get_untracked()
+                                type_filter=type_filter.get_untracked()
+                                tag_filter=tag_filter.get_untracked()
+                            />
+                            <div class="tag-row">
+                                <A href="/tags" attr:class="chip soft">"标签总览"</A>
+                                <A href="/archive" attr:class="chip soft">"时间归档"</A>
+                                <A href="/me" attr:class="chip soft">"主页"</A>
+                            </div>
 
-            <Suspense fallback=move || view! { <PageLoading label="正在搜索内容..." /> }>
-                {move || {
-                    search_results.get().map(|result| match result {
-                        Ok((current_query, current_type, current_tag, results)) => {
-                            view! {
-                                <SearchResultsContent
-                                    query=current_query
-                                    type_filter=current_type
-                                    tag_filter=current_tag
-                                    results=results
-                                />
-                            }
-                                .into_any()
-                        }
-                        Err(error) => view! { <PageError message=error.to_string() /> }.into_any(),
-                    })
-                }}
-            </Suspense>
+                            <Suspense fallback=move || view! { <PageLoading label="正在搜索内容..." /> }>
+                                {move || {
+                                    search_results.get().map(|result| match result {
+                                        Ok((current_query, current_type, current_tag, results)) => {
+                                            view! {
+                                                <SearchResultsContent
+                                                    query=current_query
+                                                    type_filter=current_type
+                                                    tag_filter=current_tag
+                                                    results=results
+                                                />
+                                            }
+                                                .into_any()
+                                        }
+                                        Err(error) => view! { <PageError message=error.to_string() /> }.into_any(),
+                                    })
+                                }}
+                            </Suspense>
+                        </>
+                    }
+                        .into_any()
+                }
+            }}
         </section>
     }
 }
@@ -1956,13 +1938,19 @@ fn SearchPage() -> impl IntoView {
 fn SearchForm(query: String, type_filter: String, tag_filter: String) -> impl IntoView {
     view! {
         <form action="/search" method="get" class="search-form">
-            <label class="search-label" for="search-q">
+            <label class="search-label search-label-inline" for="search-q">
                 "搜索 blog / notes / projects"
             </label>
-            <div class="search-form-row">
+            <div class="search-combo">
+                <select name="type" class="search-input search-select search-select-inline">
+                    <option value="" selected={type_filter.is_empty()}>"全部类型"</option>
+                    <option value="blog" selected={type_filter == "blog"}>"博客"</option>
+                    <option value="notes" selected={type_filter == "notes"}>"笔记"</option>
+                    <option value="projects" selected={type_filter == "projects"}>"项目"</option>
+                </select>
                 <input
                     id="search-q"
-                    class="search-input"
+                    class="search-input search-input-inline"
                     type="search"
                     name="q"
                     value=query
@@ -1970,20 +1958,11 @@ fn SearchForm(query: String, type_filter: String, tag_filter: String) -> impl In
                 />
                 <button type="submit" class="button primary">"开始搜索"</button>
             </div>
-            <div class="search-filter-row">
-                <label class="search-label">
-                    "类型"
-                    <select name="type" class="search-input search-select">
-                        <option value="" selected={type_filter.is_empty()}>"全部"</option>
-                        <option value="blog" selected={type_filter == "blog"}>"博客"</option>
-                        <option value="notes" selected={type_filter == "notes"}>"笔记"</option>
-                        <option value="projects" selected={type_filter == "projects"}>"项目"</option>
-                    </select>
-                </label>
-                <label class="search-label">
-                    "标签"
+            <div class="search-tag-row">
+                <label class="search-label search-tag-label">
+                    "标签过滤"
                     <input
-                        class="search-input"
+                        class="search-input search-tag-input"
                         type="text"
                         name="tag"
                         value=tag_filter
@@ -2004,23 +1983,12 @@ fn SearchResultsContent(
 ) -> impl IntoView {
     let normalized_query = query.trim().to_string();
     let has_query = !normalized_query.is_empty();
-    let has_tag_filter = !tag_filter.trim().is_empty();
-
-    if !has_query && !has_tag_filter {
-        return view! {
-            <div class="loading-card search-empty-card">
-                <span class="meta-label">"等待输入"</span>
-                <p>"输入关键词或标签后，这里会展示博客、笔记和项目中的匹配结果。"</p>
-            </div>
-        }
-        .into_any();
-    }
 
     if results.is_empty() {
         return view! {
             <div class="loading-card search-empty-card">
                 <span class="meta-label">"没有命中"</span>
-                <p>{format!("没有找到和 “{}” 相关的内容。可以换一个词，或者从标签页继续浏览。", normalized_query)}</p>
+                <p>{format!("没有找到和“{}”相关的内容。可以换一个词，或者从标签页继续浏览。", normalized_query)}</p>
             </div>
         }
         .into_any();
@@ -2064,10 +2032,12 @@ fn SearchResultsContent(
 fn SearchResultCard(result: SearchResult, query: String) -> impl IntoView {
     let title_html = highlight_text_html(&result.title, &query);
     let summary_html = highlight_text_html(&result.summary, &query);
+    let (badge_text, badge_class) = content_badge_by_href(&result.href);
 
     view! {
         <A href=result.href.clone() attr:class="archive-card search-result-card">
-            <p class="blog-meta">{format!("{} · {}", result.content_type, result.context)}</p>
+            <span class=format!("meta-badge {}", badge_class)>{badge_text}</span>
+            <p class="blog-meta">{format!("{} 路 {}", result.content_type, result.context)}</p>
             <h3 inner_html=title_html></h3>
             <p inner_html=summary_html></p>
             <div class="panel-head search-result-foot">
@@ -3181,46 +3151,7 @@ fn SyncRunCard(run: SyncRunRecord) -> impl IntoView {
 
 #[component]
 fn AboutPage() -> impl IntoView {
-    view! {
-        <Title text="关于 | Wen's Field Notes" />
-        <Meta
-            name="description"
-            content="了解这个个人内容站为什么存在、如何推进，以及 `v1.0` 当前明确的范围边界。"
-        />
-        <PageHeadExtras
-            title="关于 | Wen's Field Notes".to_string()
-            description="了解这个个人内容站为什么存在、如何推进，以及 `v1.0` 当前明确的范围边界。".to_string()
-            canonical_path="/about".to_string()
-        />
-        <section class="preview-section about-section">
-            <div class="section-kicker">"关于"</div>
-            <div class="about-layout">
-                <div class="about-copy">
-                    <h2>"我想把这个网站做成一份持续更新的公开工作现场，而不是一张静态名片。"</h2>
-                    <p>"这个仓库里会同时放产品文档、学习文档和正式代码。Rust 学习不是和项目分开的副线，而是直接在真实实现里推进。"</p>
-                    <p>"这个版本以可部署上线为目标，已经把数据库、搜索、后台、统计、任务和同步链路接了起来，但仍然刻意不扩展到评论、用户系统和平台化能力。"</p>
-                    <p>"如果你想直接看我最近在做什么，请去 `/me`；如果你想理解这个站为什么这样组织、为什么暂时不引入更重的系统能力，这一页更适合。"</p>
-                </div>
-
-                <div class="about-sidebar">
-                    <div class="identity-card">
-                        <span class="meta-label">"关键词"</span>
-                        <ul>
-                            <li>"Rust 初学者"</li>
-                            <li>"长期项目主义"</li>
-                            <li>"内容驱动网站"</li>
-                            <li>"边做边学"</li>
-                        </ul>
-                    </div>
-
-                    <div class="identity-card contact">
-                        <span class="meta-label">"当前边界"</span>
-                        <p>"`v1.0` 重点是把现有内容站稳定落地，不新增用户体系、评论社区、开放平台和复杂工作流。"</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-    }
+    view! { <MePage /> }
 }
 
 #[component]
@@ -3233,10 +3164,10 @@ fn NotFoundPage() -> impl IntoView {
             canonical_path="/404".to_string()
             robots="noindex,follow".to_string()
         />
-        <section class="preview-section">
+        <section class="preview-section plain-section">
             <div class="section-kicker">"404"</div>
             <h2>"这个页面还没有被接进当前版本。"</h2>
-            <p class="lede">"现在正式开放的有首页、个人主页、标签总览、归档、系列页、博客、笔记、项目、搜索、标签归档和关于页。"</p>
+            <p class="lede">"现在正式开放的有首页、主页、标签总览、归档、系列页、博客、笔记、项目、搜索和标签归档。"</p>
             <A href="/" attr:class="button primary">"回到首页"</A>
         </section>
     }
@@ -3303,6 +3234,18 @@ fn normalize_note_board(value: &str) -> String {
         "bochs" => "bochs".to_string(),
         "general" | "" => "general".to_string(),
         other => other.to_string(),
+    }
+}
+
+fn content_badge_by_href(href: &str) -> (&'static str, &'static str) {
+    if href.starts_with("/blog/") {
+        ("BLOG", "badge-blog")
+    } else if href.starts_with("/notes/") {
+        ("NOTE", "badge-note")
+    } else if href.starts_with("/projects/") {
+        ("PROJECT", "badge-project")
+    } else {
+        ("ENTRY", "badge-now")
     }
 }
 

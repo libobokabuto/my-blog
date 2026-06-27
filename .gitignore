@@ -12,6 +12,7 @@ Desktop.ini
 
 # Logs
 *.log
+.local-dev/
 
 # Env
 .env

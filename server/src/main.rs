@@ -49,6 +49,7 @@ async fn main() {
                 move || sitemap_handler(site_url.clone())
             }),
         )
+        .nest_service("/images", ServeDir::new(format!("{site_root}/images")))
         .nest_service("/pkg", ServeDir::new(format!("{site_root}/pkg")))
         .fallback(render_app_to_stream(move || shell(shell_options.clone())))
         .with_state(leptos_options);

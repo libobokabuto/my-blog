@@ -1,4 +1,4 @@
-use chrono::{DateTime, Datelike, NaiveDate, Utc};
+use chrono::{DateTime, Datelike, Duration, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "ssr")]
@@ -217,6 +217,21 @@ pub struct HomeStat {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ContributionCell {
+    pub date: NaiveDate,
+    pub count: usize,
+    pub level: u8,
+    pub week_index: usize,
+    pub weekday_index: u32,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ContributionMonthLabel {
+    pub label: String,
+    pub week_index: usize,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct HomeOverview {
     pub latest_posts: Vec<BlogPostSummary>,
     pub latest_notes: Vec<NoteSummary>,
@@ -224,6 +239,9 @@ pub struct HomeOverview {
     pub recent_activity: Vec<HomeActivityItem>,
     pub focus_tags: Vec<String>,
     pub stats: Vec<HomeStat>,
+    pub contribution_cells: Vec<ContributionCell>,
+    pub contribution_months: Vec<ContributionMonthLabel>,
+    pub contribution_total: usize,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
@@ -2518,6 +2536,54 @@ pub async fn get_home_overview() -> Result<HomeOverview> {
         },
     ];
 
+    let mut contribution_counts = BTreeMap::new();
+    for date in posts
+        .iter()
+        .map(|post| post.date)
+        .chain(notes.iter().map(|note| note.date))
+    {
+        *contribution_counts.entry(date).or_insert(0usize) += 1;
+    }
+
+    let contribution_total = contribution_counts.values().sum::<usize>();
+    let end_date = Utc::now().date_naive();
+    let raw_start = end_date - Duration::days(363);
+    let start_date = raw_start - Duration::days(raw_start.weekday().num_days_from_monday() as i64);
+    let total_days = (end_date - start_date).num_days() as usize + 1;
+    let max_contribution_count = contribution_counts.values().copied().max().unwrap_or(1);
+    let mut contribution_cells = Vec::with_capacity(total_days);
+    let mut contribution_months = Vec::new();
+
+    for day_offset in 0..total_days {
+        let current_date = start_date + Duration::days(day_offset as i64);
+        let count = contribution_counts.get(&current_date).copied().unwrap_or(0);
+        let level = if count == 0 {
+            0
+        } else {
+            (((count * 4) + max_contribution_count - 1) / max_contribution_count).clamp(1, 4) as u8
+        };
+        let week_index = day_offset / 7;
+
+        if current_date.day() == 1 || day_offset == 0 {
+            let label = format!("{}月", current_date.month());
+            if contribution_months
+                .last()
+                .map(|item: &ContributionMonthLabel| item.week_index != week_index)
+                .unwrap_or(true)
+            {
+                contribution_months.push(ContributionMonthLabel { label, week_index });
+            }
+        }
+
+        contribution_cells.push(ContributionCell {
+            date: current_date,
+            count,
+            level,
+            week_index,
+            weekday_index: current_date.weekday().num_days_from_monday(),
+        });
+    }
+
     Ok(HomeOverview {
         latest_posts,
         latest_notes,
@@ -2525,9 +2591,11 @@ pub async fn get_home_overview() -> Result<HomeOverview> {
         recent_activity,
         focus_tags,
         stats,
+        contribution_cells,
+        contribution_months,
+        contribution_total,
     })
 }
-
 #[cfg(feature = "ssr")]
 pub async fn get_admin_dashboard_overview() -> Result<AdminDashboardOverview> {
     let items = build_admin_content_index()?;

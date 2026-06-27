@@ -29,6 +29,23 @@ function Get-LocalServerProcesses {
     )
 }
 
+function Get-LeptosWatchProcesses {
+    return @(
+        Get-CimInstance Win32_Process -Filter "Name = 'cargo.exe'" -ErrorAction SilentlyContinue |
+            Where-Object {
+                $_.CommandLine -and
+                $_.CommandLine -like "*leptos*watch*" -and
+                $_.CommandLine -like "*$repoRoot*"
+            } |
+            ForEach-Object {
+                [PSCustomObject]@{
+                    Id = $_.ProcessId
+                    CommandLine = $_.CommandLine
+                }
+            }
+    )
+}
+
 function Import-EnvFile {
     param([string]$Path)
 
@@ -108,7 +125,25 @@ if ($env:BLOG_DATABASE_URL -match "your-password") {
     exit 1
 }
 
+$devStateDir = Join-Path $repoRoot ".local-dev"
+$watchPidFile = Join-Path $devStateDir "leptos-watch.pid"
+$stdoutLog = Join-Path $devStateDir "leptos-watch.stdout.log"
+$stderrLog = Join-Path $devStateDir "leptos-watch.stderr.log"
+
+if (-not (Test-Path -LiteralPath $devStateDir)) {
+    New-Item -ItemType Directory -Path $devStateDir | Out-Null
+}
+
+$runningWatchers = @(Get-LeptosWatchProcesses)
 $runningServers = @(Get-LocalServerProcesses)
+
+if ($runningWatchers.Count -gt 0) {
+    Write-Host "Stopping existing cargo leptos watch process(es):" -ForegroundColor Yellow
+    $runningWatchers | ForEach-Object {
+        Write-Host " - PID $($_.Id) $($_.CommandLine)" -ForegroundColor Yellow
+        Stop-Process -Id $_.Id -Force
+    }
+}
 
 if ($runningServers.Count -gt 0) {
     Write-Host "Stopping existing local server process(es):" -ForegroundColor Yellow
@@ -136,4 +171,29 @@ if ($CheckOnly) {
 }
 
 Set-Location -LiteralPath $repoRoot
-& cargo run -p server --bin server
+Write-Host "Starting cargo leptos watch in the background..." -ForegroundColor Cyan
+
+if (Test-Path -LiteralPath $stdoutLog) {
+    Remove-Item -LiteralPath $stdoutLog -Force
+}
+
+if (Test-Path -LiteralPath $stderrLog) {
+    Remove-Item -LiteralPath $stderrLog -Force
+}
+
+$watchProcess = Start-Process `
+    -FilePath "cargo" `
+    -ArgumentList @("leptos", "watch") `
+    -WorkingDirectory $repoRoot `
+    -RedirectStandardOutput $stdoutLog `
+    -RedirectStandardError $stderrLog `
+    -WindowStyle Hidden `
+    -PassThru
+
+Set-Content -LiteralPath $watchPidFile -Value $watchProcess.Id -Encoding UTF8
+
+Write-Host "cargo leptos watch started. PID: $($watchProcess.Id)" -ForegroundColor Green
+Write-Host "PID file: $watchPidFile"
+Write-Host "Stdout log: $stdoutLog"
+Write-Host "Stderr log: $stderrLog"
+Write-Host "Use .\\scripts\\stop-local.ps1 to stop the local site stack." -ForegroundColor Green
