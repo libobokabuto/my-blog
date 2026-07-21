@@ -953,7 +953,7 @@ async fn search_content_live(
 #[cfg(feature = "ssr")]
 pub async fn get_note_boards_overview() -> Result<Vec<NoteBoardSummary>> {
     let notes = list_note_entries().await?;
-    let board_order = ["rust", "cpp", "bochs", "general"];
+    let board_order = ["rust", "cpp", "bochs", "leetcode", "general"];
     let mut counts = BTreeMap::<String, NoteBoardSummary>::new();
 
     for board_key in board_order {
@@ -3266,7 +3266,7 @@ fn build_note_admin_issues(note: &NoteEntry) -> Vec<AdminContentIssue> {
         issues.push(admin_issue(
             ContentIssueSeverity::Info,
             "board-not-specialized",
-            "这条笔记目前仍在通用板块，后续如果主题稳定，可以再归入 rust / cpp / bochs。",
+            "这条笔记目前仍在通用板块，后续如果主题稳定，可以再归入 rust / cpp / bochs / leetcode。",
         ));
     }
 
@@ -3423,6 +3423,8 @@ fn normalize_note_board(value: &str) -> String {
         "rust" => "rust".to_string(),
         "c++" | "cpp" => "cpp".to_string(),
         "bochs" => "bochs".to_string(),
+        "leetcode" | "leecode" | "leetcod" | "leecodee" | "leetc0de" | "lee code" | "leet code"
+        | "leetcode刷题" | "刷题" => "leetcode".to_string(),
         "general" | "" => "general".to_string(),
         _ => normalized,
     }
@@ -3434,6 +3436,7 @@ fn note_board_label(value: &str) -> &'static str {
         "rust" => "Rust",
         "cpp" => "C++",
         "bochs" => "Bochs",
+        "leetcode" => "LeetCode",
         _ => "通用笔记",
     }
 }
@@ -3444,6 +3447,7 @@ fn note_board_description(value: &str) -> &'static str {
         "rust" => "偏 Rust 学习、语义理解、项目实践记录。",
         "cpp" => "预留给 C++ 相关笔记、语法复盘与底层实验。",
         "bochs" => "预留给 Bochs、操作系统实验和调试记录。",
+        "leetcode" => "收纳 Hot 100、算法题复盘、解法比较和刷题后的总结感悟。",
         _ => "暂时还没归入专门技术板块的过程型笔记。",
     }
 }
@@ -3454,6 +3458,7 @@ fn board_sort_order(value: &str) -> usize {
         "rust" => 0,
         "cpp" => 1,
         "bochs" => 2,
+        "leetcode" => 3,
         _ => 9,
     }
 }

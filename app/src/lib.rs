@@ -69,7 +69,7 @@ pub fn App() -> impl IntoView {
 
     view! {
         <Stylesheet id="leptos" href=stylesheet_href />
-        <Title text="Wen's Field Notes" />
+        <Title text="cosA" />
         <Meta
             name="description"
             content="一个使用 Leptos SSR 与 Markdown 构建的个人内容站，记录博客、笔记、项目和 Rust 学习过程。"
@@ -157,7 +157,7 @@ fn PageHeadExtras(
             <Meta property="og:description" content=description.clone() />
             <Meta property="og:type" content=page_type />
             <Meta property="og:url" content=canonical_url />
-            <Meta property="og:site_name" content="Wen's Field Notes" />
+            <Meta property="og:site_name" content="cosA" />
             <Meta property="og:locale" content="zh_CN" />
             <Meta name="twitter:card" content="summary" />
             <Meta name="twitter:title" content=title />
@@ -170,7 +170,7 @@ fn PageHeadExtras(
             <Meta property="og:description" content=description.clone() />
             <Meta property="og:type" content=page_type />
             <Meta property="og:url" content=canonical_url />
-            <Meta property="og:site_name" content="Wen's Field Notes" />
+            <Meta property="og:site_name" content="cosA" />
             <Meta property="og:locale" content="zh_CN" />
             <Meta name="twitter:card" content="summary" />
             <Meta name="twitter:title" content=title />
@@ -371,13 +371,13 @@ fn HomePage() -> impl IntoView {
     let home_overview = Resource::new_blocking(|| (), |_| async move { get_home_overview().await });
 
     view! {
-        <Title text="首页 | Wen's Field Notes" />
+        <Title text="首页 | cosA" />
         <Meta
             name="description"
             content="查看这个内容驱动的 Rust 个人站首页，快速进入公开工作台、博客、笔记、项目与搜索入口。"
         />
         <PageHeadExtras
-            title="首页 | Wen's Field Notes".to_string()
+            title="首页 | cosA".to_string()
             description="查看这个内容驱动的 Rust 个人站首页，快速进入公开工作台、博客、笔记、项目与搜索入口。".to_string()
             canonical_path="/".to_string()
         />
@@ -422,7 +422,7 @@ fn HomePreview(overview: HomeOverview) -> impl IntoView {
                 <article class="panel home-editorial-panel">
                     <div class="panel-head">
                         <span class="meta-label">"内容方向"</span>
-                        <span>"Wen's Field Notes"</span>
+                        <span>"cosA"</span>
                     </div>
                     <h2>"Rust 学习、工程实践，还有正在推进的个人项目。"</h2>
                     <div class="tag-row compact-tags">
@@ -559,13 +559,13 @@ fn MePage() -> impl IntoView {
     let home_overview = Resource::new_blocking(|| (), |_| async move { get_home_overview().await });
 
     view! {
-        <Title text="主页 | Wen's Field Notes" />
+        <Title text="主页 | cosA" />
         <Meta
             name="description"
             content="查看我的公开工作台：当前状态、内容入口、最近动态、重点项目与轻量统计。"
         />
         <PageHeadExtras
-            title="主页 | Wen's Field Notes".to_string()
+            title="主页 | cosA".to_string()
             description="查看我的公开工作台：当前状态、内容入口、最近动态、重点项目与轻量统计。".to_string()
             canonical_path="/me".to_string()
         />
@@ -609,7 +609,7 @@ fn MeWorkbench(overview: HomeOverview) -> impl IntoView {
                     <div class="profile-avatar-frame">
                         <img class="profile-avatar-image" src=AVATAR_IMAGE_PATH alt="主页头像" />
                     </div>
-                    <h1>"Wen's Field Notes"</h1>
+                    <h1>"cosA"</h1>
                     <p class="profile-meta">{format!("最近更新 {}", latest_update)}</p>
                     <div class="profile-facts">
                         {stats
@@ -806,13 +806,13 @@ fn BlogListPage() -> impl IntoView {
     let blog_posts = Resource::new_blocking(|| (), |_| async move { list_blog_posts().await });
 
     view! {
-        <Title text="博客 | Wen's Field Notes" />
+        <Title text="博客 | cosA" />
         <Meta
             name="description"
             content="按时间与标签浏览博客文章，查看这个个人内容站里已经正式发布的文章。"
         />
         <PageHeadExtras
-            title="博客 | Wen's Field Notes".to_string()
+            title="博客 | cosA".to_string()
             description="按时间与标签浏览博客文章，查看这个个人内容站里已经正式发布的内容。".to_string()
             canonical_path="/blog".to_string()
         />
@@ -949,7 +949,7 @@ fn BlogDetailPage() -> impl IntoView {
 #[component]
 fn BlogDetailContent(post: BlogPost) -> impl IntoView {
     let html = post.html.clone();
-    let title_text = format!("{} | Wen's Field Notes", post.title);
+    let title_text = format!("{} | cosA", post.title);
     let description_text = post.summary.clone();
     let tags = post.tags.clone();
     let related = post.related.clone();
@@ -1049,13 +1049,13 @@ fn NotesPage() -> impl IntoView {
     let notes = Resource::new_blocking(|| (), |_| async move { list_note_entries().await });
 
     view! {
-        <Title text="笔记 | Wen's Field Notes" />
+        <Title text="笔记 | cosA" />
         <Meta
             name="description"
             content="查看这个站点中的学习记录、实验结论与过程型笔记。"
         />
         <PageHeadExtras
-            title="笔记 | Wen's Field Notes".to_string()
+            title="笔记 | cosA".to_string()
             description="查看这个站点中的学习记录、实验结论与过程型笔记。".to_string()
             canonical_path="/notes".to_string()
         />
@@ -1086,7 +1086,7 @@ fn NotesListContent(notes: Vec<NoteSummary>) -> impl IntoView {
         grouped.entry(note.board.clone()).or_default().push(note);
     }
 
-    let mut ordered_groups = ["rust", "cpp", "bochs", "general"]
+    let mut ordered_groups = ["rust", "cpp", "bochs", "leetcode", "general"]
         .into_iter()
         .map(|key| {
             let items = grouped.remove(key).unwrap_or_default();
@@ -1188,7 +1188,7 @@ fn NoteDetailPage() -> impl IntoView {
 #[component]
 fn NoteDetailContent(note: NoteEntry) -> impl IntoView {
     let html = note.html.clone();
-    let title_text = format!("{} | Wen's Field Notes", note.title);
+    let title_text = format!("{} | cosA", note.title);
     let description_text = note.summary.clone();
     let tags = note.tags.clone();
     let related = note.related.clone();
@@ -1289,13 +1289,13 @@ fn ProjectsPage() -> impl IntoView {
     let projects = Resource::new_blocking(|| (), |_| async move { list_project_entries().await });
 
     view! {
-        <Title text="项目 | Wen's Field Notes" />
+        <Title text="项目 | cosA" />
         <Meta
             name="description"
             content="浏览这个站点中的项目展示，了解当前在做什么、用什么做、进行到哪一步。"
         />
         <PageHeadExtras
-            title="项目 | Wen's Field Notes".to_string()
+            title="项目 | cosA".to_string()
             description="浏览这个站点中的项目展示，了解当前在做什么、用什么做、进行到哪一步。".to_string()
             canonical_path="/projects".to_string()
         />
@@ -1440,7 +1440,7 @@ fn ProjectDetailPage() -> impl IntoView {
 #[component]
 fn ProjectDetailContent(project: ProjectEntry) -> impl IntoView {
     let html = project.html.clone();
-    let title_text = format!("{} | Wen's Field Notes", project.title);
+    let title_text = format!("{} | cosA", project.title);
     let description_text = project.summary.clone();
     let related = project.related.clone();
 
@@ -1617,7 +1617,7 @@ fn SeriesPageView() -> impl IntoView {
 
 #[component]
 fn SeriesPageContent(series: SeriesPage) -> impl IntoView {
-    let title_text = format!("系列：{} | Wen's Field Notes", series.title);
+    let title_text = format!("系列：{} | cosA", series.title);
     let description_text = format!(
         "查看系列 {} 下的全部文章，按顺序了解这一主题的持续展开。",
         series.title
@@ -1711,7 +1711,7 @@ fn TagsOverviewPage() -> impl IntoView {
 
 #[component]
 fn TagsOverviewContent(overview: TagsOverview) -> impl IntoView {
-    let title_text = "标签总览 | Wen's Field Notes".to_string();
+    let title_text = "标签总览 | cosA".to_string();
     let description_text =
         "查看这个内容站当前已经形成的主题标签，按主题密度继续进入博客与笔记。".to_string();
     let total_tags = overview.total_tags;
@@ -1798,7 +1798,7 @@ fn ArchiveOverviewPage() -> impl IntoView {
 
 #[component]
 fn ArchiveOverviewContent(overview: ArchiveOverview) -> impl IntoView {
-    let title_text = "归档 | Wen's Field Notes".to_string();
+    let title_text = "归档 | cosA".to_string();
     let description_text =
         "按年份浏览这个内容站中已经公开的博客与笔记更新，查看长期积累的时间结构。".to_string();
     let total_entries = overview.total_entries;
@@ -1874,7 +1874,7 @@ fn ArchiveYearSection(group: ArchiveYearGroup) -> impl IntoView {
 
 #[component]
 fn TagArchiveContent(archive: TagArchive) -> impl IntoView {
-    let title_text = format!("标签：{} | Wen's Field Notes", archive.tag);
+    let title_text = format!("标签：{} | cosA", archive.tag);
     let description_text = format!(
         "查看标签 {} 关联的博客与笔记内容，沿着主题继续浏览这个站点中的公开记录。",
         archive.tag
@@ -1996,14 +1996,14 @@ fn SearchPage() -> impl IntoView {
     );
 
     view! {
-        <Title text="搜索 | Wen's Field Notes" />
+        <Title text="搜索 | cosA" />
         <Meta
             name="description"
             content="在博客、笔记和项目范围内搜索这个站点中的公开内容。"
         />
         <Meta name="robots" content="noindex,follow" />
         <PageHeadExtras
-            title="搜索 | Wen's Field Notes".to_string()
+            title="搜索 | cosA".to_string()
             description="在博客、笔记和项目范围内搜索这个站点中的公开内容。".to_string()
             canonical_path="/search".to_string()
             robots="noindex,follow".to_string()
@@ -2195,14 +2195,14 @@ fn AdminDashboardPage() -> impl IntoView {
     );
 
     view! {
-        <Title text="后台概览 | Wen's Field Notes" />
+        <Title text="后台概览 | cosA" />
         <Meta
             name="description"
             content="查看当前内容后台的运行概览、内容总量、问题摘要与管理入口。"
         />
         <Meta name="robots" content="noindex,follow" />
         <PageHeadExtras
-            title="后台概览 | Wen's Field Notes".to_string()
+            title="后台概览 | cosA".to_string()
             description="查看当前内容后台的运行概览、内容总量、问题摘要与管理入口。".to_string()
             canonical_path="/admin".to_string()
             robots="noindex,follow".to_string()
@@ -2336,14 +2336,14 @@ fn AdminContentPage() -> impl IntoView {
     );
 
     view! {
-        <Title text="内容后台 | Wen's Field Notes" />
+        <Title text="内容后台 | cosA" />
         <Meta
             name="description"
             content="查看统一内容后台列表、筛选条件、来源路径和问题摘要。"
         />
         <Meta name="robots" content="noindex,follow" />
         <PageHeadExtras
-            title="内容后台 | Wen's Field Notes".to_string()
+            title="内容后台 | cosA".to_string()
             description="查看统一内容后台列表、筛选条件、来源路径和问题摘要。".to_string()
             canonical_path="/admin/content".to_string()
             robots="noindex,follow".to_string()
@@ -2521,14 +2521,14 @@ fn AdminContentDetailPage() -> impl IntoView {
     );
 
     view! {
-        <Title text="内容详情 | Wen's Field Notes" />
+        <Title text="内容详情 | cosA" />
         <Meta
             name="description"
             content="查看后台中的单条内容详情、来源信息、关联项与问题摘要。"
         />
         <Meta name="robots" content="noindex,follow" />
         <PageHeadExtras
-            title="内容详情 | Wen's Field Notes".to_string()
+            title="内容详情 | cosA".to_string()
             description="查看后台中的单条内容详情、来源信息、关联项与问题摘要。".to_string()
             canonical_path="/admin/content".to_string()
             robots="noindex,follow".to_string()
@@ -2708,14 +2708,14 @@ fn AdminSearchPage() -> impl IntoView {
     );
 
     view! {
-        <Title text="搜索后台 | Wen's Field Notes" />
+        <Title text="搜索后台 | cosA" />
         <Meta
             name="description"
             content="查看搜索索引状态、重建记录、运行态依赖与查询诊断。"
         />
         <Meta name="robots" content="noindex,follow" />
         <PageHeadExtras
-            title="搜索后台 | Wen's Field Notes".to_string()
+            title="搜索后台 | cosA".to_string()
             description="查看搜索索引状态、重建记录、运行态依赖与查询诊断。".to_string()
             canonical_path="/admin/search".to_string()
             robots="noindex,follow".to_string()
@@ -2900,14 +2900,14 @@ fn AdminStatsPage() -> impl IntoView {
         Resource::new_blocking(|| (), |_| async move { get_admin_stats_overview().await });
 
     view! {
-        <Title text="统计后台 | Wen's Field Notes" />
+        <Title text="统计后台 | cosA" />
         <Meta
             name="description"
             content="查看统计快照、治理指标与持久化统计结果。"
         />
         <Meta name="robots" content="noindex,follow" />
         <PageHeadExtras
-            title="统计后台 | Wen's Field Notes".to_string()
+            title="统计后台 | cosA".to_string()
             description="查看统计快照、治理指标与持久化统计结果。".to_string()
             canonical_path="/admin/stats".to_string()
             robots="noindex,follow".to_string()
@@ -3000,14 +3000,14 @@ fn AdminTasksPage() -> impl IntoView {
         Resource::new_blocking(|| (), |_| async move { get_admin_tasks_overview().await });
 
     view! {
-        <Title text="任务后台 | Wen's Field Notes" />
+        <Title text="任务后台 | cosA" />
         <Meta
             name="description"
             content="查看任务记录、重建动作和服务端执行历史。"
         />
         <Meta name="robots" content="noindex,follow" />
         <PageHeadExtras
-            title="任务后台 | Wen's Field Notes".to_string()
+            title="任务后台 | cosA".to_string()
             description="查看任务记录、重建动作和服务端执行历史。".to_string()
             canonical_path="/admin/tasks".to_string()
             robots="noindex,follow".to_string()
@@ -3124,14 +3124,14 @@ fn AdminSyncPage() -> impl IntoView {
     );
 
     view! {
-        <Title text="同步后台 | Wen's Field Notes" />
+        <Title text="同步后台 | cosA" />
         <Meta
             name="description"
             content="查看同步边界、同步源与运行记录。"
         />
         <Meta name="robots" content="noindex,follow" />
         <PageHeadExtras
-            title="同步后台 | Wen's Field Notes".to_string()
+            title="同步后台 | cosA".to_string()
             description="查看同步边界、同步源与运行记录。".to_string()
             canonical_path="/admin/sync".to_string()
             robots="noindex,follow".to_string()
@@ -3290,9 +3290,9 @@ fn AboutPage() -> impl IntoView {
 #[component]
 fn NotFoundPage() -> impl IntoView {
     view! {
-        <Title text="404 | Wen's Field Notes" />
+        <Title text="404 | cosA" />
         <PageHeadExtras
-            title="404 | Wen's Field Notes".to_string()
+            title="404 | cosA".to_string()
             description="这个页面还没有被接进当前版本。".to_string()
             canonical_path="/404".to_string()
             robots="noindex,follow".to_string()
@@ -3365,6 +3365,8 @@ fn normalize_note_board(value: &str) -> String {
         "rust" => "rust".to_string(),
         "c++" | "cpp" => "cpp".to_string(),
         "bochs" => "bochs".to_string(),
+        "leetcode" | "leecode" | "leetcod" | "leecodee" | "leetc0de" | "lee code" | "leet code"
+        | "leetcode刷题" | "刷题" => "leetcode".to_string(),
         "general" | "" => "general".to_string(),
         other => other.to_string(),
     }
@@ -3387,6 +3389,7 @@ fn note_board_label(value: &str) -> &'static str {
         "rust" => "Rust",
         "cpp" => "C++",
         "bochs" => "Bochs",
+        "leetcode" => "LeetCode",
         _ => "通用笔记",
     }
 }
@@ -3396,6 +3399,7 @@ fn note_board_description(value: &str) -> &'static str {
         "rust" => "偏 Rust 学习、语义理解和项目实践记录。",
         "cpp" => "收纳 C++ 相关笔记、语法复盘与底层实验记录。",
         "bochs" => "收纳 Bochs、操作系统实验和调试记录。",
+        "leetcode" => "收纳 Hot 100、算法题复盘、解法比较和刷题后的总结感悟。",
         _ => "暂时还没归入专门技术板块的过程型笔记。",
     }
 }

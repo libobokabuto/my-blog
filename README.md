@@ -60,12 +60,16 @@ my-blog/
 ├─ content/              # Markdown 内容源
 ├─ static/               # 静态资源与项目截图
 ├─ PRDS/                 # 产品需求、开发计划、版本记录
-├─ LEARNING/             # Rust 学习记录
 ├─ scripts/              # 辅助脚本
 ├─ deploy/               # 部署说明与示例配置
 ├─ Cargo.toml            # Rust workspace 配置
 └─ README.md
 ```
+
+仓库外的学习笔记体系已经迁到：
+
+- `E:/Study/notes/rust/00-rust-basics`
+- `E:/Study/notes/cosA-project/*`
 
 ## 本地运行
 
