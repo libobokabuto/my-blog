@@ -954,17 +954,8 @@ a {
   min-height: 11rem;
 }
 
-.home-workbench-grid,
-.next-writing-panel {
-  display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
-  gap: var(--space-4);
-}
-
 .workbench-panel,
-.site-index-panel,
-.route-map-panel,
-.next-writing-card {
+.site-index-panel {
   gap: 1rem;
 }
 
@@ -988,9 +979,7 @@ a {
 }
 
 .workbench-lanes,
-.site-index-meter,
-.sticky-note-list,
-.next-writing-lines {
+.site-index-meter {
   display: grid;
   gap: 0.75rem;
 }
@@ -1036,16 +1025,13 @@ a {
 }
 
 .workbench-lane strong,
-.site-index-row strong,
-.next-writing-card h3 {
+.site-index-row strong {
   font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
 }
 
 .workbench-lane small,
 .workbench-lane em,
-.site-index-row small,
-.sticky-note-list span,
-.next-writing-lines span {
+.site-index-row small {
   color: var(--text-soft);
   line-height: 1.55;
 }
@@ -1075,96 +1061,6 @@ a {
 
 .site-index-row strong {
   font-size: 1.3rem;
-}
-
-.route-map-panel {
-  overflow: hidden;
-}
-
-.route-map {
-  display: grid;
-  gap: 1rem;
-}
-
-.route-track {
-  position: relative;
-  display: grid;
-  gap: 0.75rem;
-  padding: 1rem;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-  background:
-    linear-gradient(90deg, color-mix(in srgb, var(--accent) 7%, transparent), transparent 42%),
-    color-mix(in srgb, var(--surface-card) 88%, transparent);
-}
-
-.route-track::before {
-  content: "";
-  position: absolute;
-  left: 1.1rem;
-  right: 1.1rem;
-  top: 3.95rem;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--accent) 24%, transparent),
-    color-mix(in srgb, var(--accent-project) 42%, transparent),
-    color-mix(in srgb, var(--accent) 24%, transparent)
-  );
-  background-size: 180% 100%;
-  animation: route-flow 4200ms linear infinite;
-}
-
-.route-track-title {
-  color: var(--text-muted);
-  font-size: 0.86rem;
-}
-
-.route-nodes {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 0.6rem;
-}
-
-.route-node {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 2.45rem;
-  padding: 0.45rem 0.65rem;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--surface-card) 96%, transparent);
-  color: var(--text-soft);
-  font-size: 0.86rem;
-  text-align: center;
-}
-
-.route-node.strong {
-  color: var(--text);
-  border-color: color-mix(in srgb, var(--accent-project) 38%, var(--line-strong));
-  background: color-mix(in srgb, var(--accent-project) 10%, var(--surface-card));
-}
-
-.next-writing-card {
-  grid-template-columns: minmax(0, 0.78fr) minmax(0, 1fr);
-}
-
-.next-writing-card h3 {
-  margin: 0.35rem 0 0;
-  font-size: clamp(1.25rem, 2.2vw, 1.65rem);
-  line-height: 1.12;
-}
-
-.sticky-note-list span,
-.next-writing-lines span {
-  display: block;
-  padding: 0.72rem 0.85rem;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--surface-card) 86%, transparent);
 }
 
 .project-showcase {
@@ -2708,14 +2604,6 @@ a {
     grid-template-columns: 1fr 1fr;
   }
 
-  .route-nodes {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .route-track::before {
-    content: none;
-  }
-
   .home-metric-grid,
   .notes-board-overview {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2817,17 +2705,12 @@ a {
   }
 
   .workbench-lane,
-  .site-index-row,
-  .next-writing-card {
+  .site-index-row {
     grid-template-columns: 1fr;
   }
 
   .workbench-lane em {
     justify-self: start;
-  }
-
-  .route-nodes {
-    grid-template-columns: 1fr;
   }
 
   .home-metric-grid,

@@ -481,8 +481,6 @@ fn HomePreview(overview: HomeOverview) -> impl IntoView {
                 <HomeSiteIndex stats=site_index_stats />
             </div>
 
-            <TechRouteMap />
-
             <div class="home-panels v3 home-preview-grid">
                 <article class="panel split-panel content-preview-card latest-posts-panel">
                     <div class="panel-head">
@@ -542,8 +540,6 @@ fn HomePreview(overview: HomeOverview) -> impl IntoView {
                     </div>
                 </article>
             </div>
-
-            <HomeNextWriting />
 
             <div class="home-reference-grid compact-home-footer">
                 <article class="panel manifesto-panel">
@@ -637,70 +633,6 @@ fn HomeSiteIndex(stats: Vec<HomeStat>) -> impl IntoView {
                     })
                     .collect_view()}
             </div>
-        </section>
-    }
-}
-
-#[component]
-fn TechRouteMap() -> impl IntoView {
-    view! {
-        <section class="panel route-map-panel">
-            <div class="panel-head">
-                <span class="meta-label">"技术路线小地图"</span>
-                <span>"两条主线"</span>
-            </div>
-            <div class="route-map">
-                <div class="route-track">
-                    <span class="route-track-title">"Web 内容系统"</span>
-                    <div class="route-nodes">
-                        <A href="/tags/Rust" attr:class="route-node">"Rust"</A>
-                        <span class="route-node">"Leptos SSR"</span>
-                        <A href="/search" attr:class="route-node">"搜索索引"</A>
-                        <A href="/archive" attr:class="route-node">"归档"</A>
-                        <A href="/projects/my-blog" attr:class="route-node strong">"my-blog"</A>
-                    </div>
-                </div>
-                <div class="route-track">
-                    <span class="route-track-title">"模拟器工程"</span>
-                    <div class="route-nodes">
-                        <span class="route-node">"Bochs 3.0"</span>
-                        <span class="route-node">"BIOS"</span>
-                        <span class="route-node">"VGA"</span>
-                        <span class="route-node">"Disk"</span>
-                        <A href="/projects/x86-sim" attr:class="route-node strong">"x86-Sim"</A>
-                    </div>
-                </div>
-            </div>
-        </section>
-    }
-}
-
-#[component]
-fn HomeNextWriting() -> impl IntoView {
-    view! {
-        <section class="next-writing-panel">
-            <article class="panel next-writing-card">
-                <div>
-                    <span class="meta-label">"最近在做什么"</span>
-                    <h3>"把能跑起来的工程，整理成别人也能读懂的路径。"</h3>
-                </div>
-                <div class="sticky-note-list">
-                    <span>"整理 x86-Sim 从 BIOS 到登录界面的启动链路。"</span>
-                    <span>"继续收紧个人站首页的信息密度和进入节奏。"</span>
-                    <span>"把 Rust / Leptos 学习记录从零散笔记变成系列。"</span>
-                </div>
-            </article>
-            <article class="panel next-writing-card next-writing-roadmap">
-                <div>
-                    <span class="meta-label">"下一篇预告"</span>
-                    <h3>"不是占位，是写作队列。"</h3>
-                </div>
-                <div class="next-writing-lines">
-                    <span>"x86-Sim：一次真实迁移工程里最容易低估的环境问题"</span>
-                    <span>"Leptos SSR：这个站点的内容索引怎么组织"</span>
-                    <span>"Rust 学习：我会优先补哪些卡住过的点"</span>
-                </div>
-            </article>
         </section>
     }
 }
