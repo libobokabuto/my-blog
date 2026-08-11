@@ -182,6 +182,41 @@ a {
   }
 }
 
+@keyframes dot-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent-project) 34%, transparent);
+    transform: scale(1);
+  }
+
+  50% {
+    box-shadow: 0 0 0 0.45rem transparent;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes route-flow {
+  from {
+    background-position: 0% 50%;
+  }
+
+  to {
+    background-position: 160% 50%;
+  }
+}
+
+@keyframes boot-line-in {
+  from {
+    opacity: 0;
+    transform: translateX(-0.5rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 .page-shell {
   width: var(--content-width);
   margin: 0 auto;
@@ -919,6 +954,219 @@ a {
   min-height: 11rem;
 }
 
+.home-workbench-grid,
+.next-writing-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+  gap: var(--space-4);
+}
+
+.workbench-panel,
+.site-index-panel,
+.route-map-panel,
+.next-writing-card {
+  gap: 1rem;
+}
+
+.workbench-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--text-muted);
+  font-family: "Cascadia Code", "Consolas", monospace;
+  font-size: 0.78rem;
+}
+
+.workbench-status span,
+.workbench-dot {
+  display: inline-block;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--accent-project);
+  animation: dot-pulse 2200ms ease-in-out infinite;
+}
+
+.workbench-lanes,
+.site-index-meter,
+.sticky-note-list,
+.next-writing-lines {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.workbench-lane {
+  position: relative;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 0.78fr) minmax(0, 1fr) max-content;
+  gap: 0.75rem;
+  align-items: center;
+  min-height: 3.6rem;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--surface-card) 88%, transparent);
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.workbench-lane::after {
+  content: "";
+  position: absolute;
+  inset-inline: 2.25rem 1rem;
+  bottom: 0.55rem;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--accent-project) 42%, transparent),
+    transparent
+  );
+  background-size: 180% 100%;
+  opacity: 0.62;
+  animation: route-flow 3600ms linear infinite;
+}
+
+.workbench-lane:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent-project) 32%, var(--line-strong));
+  background: color-mix(in srgb, var(--surface-card) 90%, var(--accent-project) 4%);
+}
+
+.workbench-lane strong,
+.site-index-row strong,
+.next-writing-card h3 {
+  font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+}
+
+.workbench-lane small,
+.workbench-lane em,
+.site-index-row small,
+.sticky-note-list span,
+.next-writing-lines span {
+  color: var(--text-soft);
+  line-height: 1.55;
+}
+
+.workbench-lane em {
+  justify-self: end;
+  font-style: normal;
+  font-size: 0.8rem;
+}
+
+.site-index-row {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) max-content minmax(0, 1.2fr);
+  gap: 0.75rem;
+  align-items: baseline;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.site-index-row:last-child {
+  border-bottom: 0;
+}
+
+.site-index-row span {
+  color: var(--text-muted);
+}
+
+.site-index-row strong {
+  font-size: 1.3rem;
+}
+
+.route-map-panel {
+  overflow: hidden;
+}
+
+.route-map {
+  display: grid;
+  gap: 1rem;
+}
+
+.route-track {
+  position: relative;
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 7%, transparent), transparent 42%),
+    color-mix(in srgb, var(--surface-card) 88%, transparent);
+}
+
+.route-track::before {
+  content: "";
+  position: absolute;
+  left: 1.1rem;
+  right: 1.1rem;
+  top: 3.95rem;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent) 24%, transparent),
+    color-mix(in srgb, var(--accent-project) 42%, transparent),
+    color-mix(in srgb, var(--accent) 24%, transparent)
+  );
+  background-size: 180% 100%;
+  animation: route-flow 4200ms linear infinite;
+}
+
+.route-track-title {
+  color: var(--text-muted);
+  font-size: 0.86rem;
+}
+
+.route-nodes {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.route-node {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.45rem;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--surface-card) 96%, transparent);
+  color: var(--text-soft);
+  font-size: 0.86rem;
+  text-align: center;
+}
+
+.route-node.strong {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--accent-project) 38%, var(--line-strong));
+  background: color-mix(in srgb, var(--accent-project) 10%, var(--surface-card));
+}
+
+.next-writing-card {
+  grid-template-columns: minmax(0, 0.78fr) minmax(0, 1fr);
+}
+
+.next-writing-card h3 {
+  margin: 0.35rem 0 0;
+  font-size: clamp(1.25rem, 2.2vw, 1.65rem);
+  line-height: 1.12;
+}
+
+.sticky-note-list span,
+.next-writing-lines span {
+  display: block;
+  padding: 0.72rem 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--surface-card) 86%, transparent);
+}
+
 .project-showcase {
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
@@ -1059,6 +1307,70 @@ a {
 
 .showcase-links {
   margin-top: 0.25rem;
+}
+
+.boot-panel {
+  display: grid;
+  gap: 0.7rem;
+  padding: 0.9rem;
+  border: 1px solid color-mix(in srgb, var(--accent-project) 28%, var(--line));
+  border-radius: var(--radius-md);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--accent-project) 8%, transparent), transparent),
+    color-mix(in srgb, var(--surface-card) 88%, var(--bg-soft) 12%);
+  font-family: "Cascadia Code", "Consolas", monospace;
+}
+
+.boot-panel-head,
+.boot-lines span {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.boot-panel-head {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.boot-panel-head strong {
+  color: var(--accent-project);
+}
+
+.boot-lines {
+  display: grid;
+  gap: 0.42rem;
+}
+
+.boot-lines span {
+  opacity: 0;
+  animation: boot-line-in 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.boot-lines span:nth-child(2) {
+  animation-delay: 80ms;
+}
+
+.boot-lines span:nth-child(3) {
+  animation-delay: 160ms;
+}
+
+.boot-lines span:nth-child(4) {
+  animation-delay: 240ms;
+}
+
+.boot-lines b {
+  color: var(--text);
+  font-size: 0.86rem;
+}
+
+.boot-lines em {
+  color: var(--text-soft);
+  font-style: normal;
+  font-size: 0.82rem;
 }
 
 .home-activity-rail {
@@ -2346,8 +2658,10 @@ a {
   .hero-grid,
   .home-panels,
   .home-feature-grid,
+  .home-workbench-grid,
   .home-entry-grid,
   .home-reference-grid,
+  .next-writing-panel,
   .project-showcase,
   .blog-empty-state,
   .me-focus-grid,
@@ -2392,6 +2706,14 @@ a {
 
   .home-route-grid {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .route-nodes {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .route-track::before {
+    content: none;
   }
 
   .home-metric-grid,
@@ -2491,6 +2813,20 @@ a {
   }
 
   .home-route-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .workbench-lane,
+  .site-index-row,
+  .next-writing-card {
+    grid-template-columns: 1fr;
+  }
+
+  .workbench-lane em {
+    justify-self: start;
+  }
+
+  .route-nodes {
     grid-template-columns: 1fr;
   }
 

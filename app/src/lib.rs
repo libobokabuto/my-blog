@@ -6,7 +6,7 @@ use content::{
     AdminContentTypeSummary, AdminDashboardOverview, AdminSearchOverview, AdminStatsOverview,
     AdminSummaryStat, AdminSyncOverview, AdminTasksOverview, ArchiveOverview, ArchiveYearGroup,
     BlogPost, BlogPostSummary, ContributionCell, ContributionMonthLabel, HomeActivityItem,
-    HomeOverview, MetricSnapshot, NoteBoardSummary, NoteEntry, NoteSummary, ProjectEntry,
+    HomeOverview, HomeStat, MetricSnapshot, NoteBoardSummary, NoteEntry, NoteSummary, ProjectEntry,
     ProjectSummary, RelatedContentItem, SearchQueryDiagnostic, SearchRebuildRecord, SearchResult,
     SeriesPage, SyncRunRecord, SyncSourceRecord, TagArchive, TagArchiveItem, TagOverviewItem,
     TagsOverview, TaskRunRecord,
@@ -419,6 +419,7 @@ fn HomePreview(overview: HomeOverview) -> impl IntoView {
     } = overview;
     let hero_stats = stats.iter().take(3).cloned().collect::<Vec<_>>();
     let hero_focus_tags = focus_tags.clone();
+    let site_index_stats = stats.iter().take(5).cloned().collect::<Vec<_>>();
 
     view! {
         <>
@@ -474,6 +475,13 @@ fn HomePreview(overview: HomeOverview) -> impl IntoView {
                         })}
                 </article>
             </div>
+
+            <div class="home-workbench-grid">
+                <HomeWorkbenchStrip />
+                <HomeSiteIndex stats=site_index_stats />
+            </div>
+
+            <TechRouteMap />
 
             <div class="home-panels v3 home-preview-grid">
                 <article class="panel split-panel content-preview-card latest-posts-panel">
@@ -535,6 +543,8 @@ fn HomePreview(overview: HomeOverview) -> impl IntoView {
                 </article>
             </div>
 
+            <HomeNextWriting />
+
             <div class="home-reference-grid compact-home-footer">
                 <article class="panel manifesto-panel">
                     <div class="panel-head">
@@ -572,6 +582,129 @@ fn HomePreview(overview: HomeOverview) -> impl IntoView {
         </>
     }
 }
+
+#[component]
+fn HomeWorkbenchStrip() -> impl IntoView {
+    view! {
+        <section class="panel workbench-panel">
+            <div class="panel-head">
+                <span class="meta-label">"当前工作台"</span>
+                <span class="workbench-status"><span></span>"live"</span>
+            </div>
+            <div class="workbench-lanes">
+                <A href="/projects/x86-sim" attr:class="workbench-lane is-hot">
+                    <span class="workbench-dot"></span>
+                    <strong>"x86-Sim"</strong>
+                    <small>"BIOS 加载链路和设备初始化"</small>
+                    <em>"进行中"</em>
+                </A>
+                <A href="/projects/my-blog" attr:class="workbench-lane">
+                    <span class="workbench-dot"></span>
+                    <strong>"my-blog"</strong>
+                    <small>"首页层级、内容索引和视觉节奏"</small>
+                    <em>"打磨中"</em>
+                </A>
+                <A href="/notes" attr:class="workbench-lane">
+                    <span class="workbench-dot"></span>
+                    <strong>"Rust / Leptos"</strong>
+                    <small>"把踩坑过程整理成可复用笔记"</small>
+                    <em>"待整理"</em>
+                </A>
+            </div>
+        </section>
+    }
+}
+
+#[component]
+fn HomeSiteIndex(stats: Vec<HomeStat>) -> impl IntoView {
+    view! {
+        <section class="panel site-index-panel">
+            <div class="panel-head">
+                <span class="meta-label">"站点索引仪表"</span>
+                <A href="/archive">"看归档"</A>
+            </div>
+            <div class="site-index-meter">
+                {stats
+                    .into_iter()
+                    .map(|stat| {
+                        view! {
+                            <A href=stat.href attr:class="site-index-row">
+                                <span>{stat.label}</span>
+                                <strong>{stat.value}</strong>
+                                <small>{stat.detail}</small>
+                            </A>
+                        }
+                    })
+                    .collect_view()}
+            </div>
+        </section>
+    }
+}
+
+#[component]
+fn TechRouteMap() -> impl IntoView {
+    view! {
+        <section class="panel route-map-panel">
+            <div class="panel-head">
+                <span class="meta-label">"技术路线小地图"</span>
+                <span>"两条主线"</span>
+            </div>
+            <div class="route-map">
+                <div class="route-track">
+                    <span class="route-track-title">"Web 内容系统"</span>
+                    <div class="route-nodes">
+                        <A href="/tags/Rust" attr:class="route-node">"Rust"</A>
+                        <span class="route-node">"Leptos SSR"</span>
+                        <A href="/search" attr:class="route-node">"搜索索引"</A>
+                        <A href="/archive" attr:class="route-node">"归档"</A>
+                        <A href="/projects/my-blog" attr:class="route-node strong">"my-blog"</A>
+                    </div>
+                </div>
+                <div class="route-track">
+                    <span class="route-track-title">"模拟器工程"</span>
+                    <div class="route-nodes">
+                        <span class="route-node">"Bochs 3.0"</span>
+                        <span class="route-node">"BIOS"</span>
+                        <span class="route-node">"VGA"</span>
+                        <span class="route-node">"Disk"</span>
+                        <A href="/projects/x86-sim" attr:class="route-node strong">"x86-Sim"</A>
+                    </div>
+                </div>
+            </div>
+        </section>
+    }
+}
+
+#[component]
+fn HomeNextWriting() -> impl IntoView {
+    view! {
+        <section class="next-writing-panel">
+            <article class="panel next-writing-card">
+                <div>
+                    <span class="meta-label">"最近在做什么"</span>
+                    <h3>"把能跑起来的工程，整理成别人也能读懂的路径。"</h3>
+                </div>
+                <div class="sticky-note-list">
+                    <span>"整理 x86-Sim 从 BIOS 到登录界面的启动链路。"</span>
+                    <span>"继续收紧个人站首页的信息密度和进入节奏。"</span>
+                    <span>"把 Rust / Leptos 学习记录从零散笔记变成系列。"</span>
+                </div>
+            </article>
+            <article class="panel next-writing-card next-writing-roadmap">
+                <div>
+                    <span class="meta-label">"下一篇预告"</span>
+                    <h3>"不是占位，是写作队列。"</h3>
+                </div>
+                <div class="next-writing-lines">
+                    <span>"x86-Sim：一次真实迁移工程里最容易低估的环境问题"</span>
+                    <span>"Leptos SSR：这个站点的内容索引怎么组织"</span>
+                    <span>"Rust 学习：我会优先补哪些卡住过的点"</span>
+                </div>
+            </article>
+        </section>
+    }
+}
+
 #[component]
 fn MePage() -> impl IntoView {
     let home_overview = Resource::new_blocking(|| (), |_| async move { get_home_overview().await });
@@ -825,6 +958,7 @@ fn ProjectShowcase(
     #[prop(default = false)] compact: bool,
 ) -> impl IntoView {
     let preview_image = project_preview_image(&project.slug);
+    let is_x86_project = project.slug == "x86-sim";
 
     view! {
         <article class=move || {
@@ -871,6 +1005,11 @@ fn ProjectShowcase(
                 </div>
                 <h3>{project.title.clone()}</h3>
                 <p>{project.summary.clone()}</p>
+                {if is_x86_project {
+                    view! { <X86BootPanel /> }.into_any()
+                } else {
+                    ().into_any()
+                }}
                 <div class="tag-row compact-tags">
                     {project
                         .stack
@@ -909,6 +1048,24 @@ fn ProjectShowcase(
                 </div>
             </div>
         </article>
+    }
+}
+
+#[component]
+fn X86BootPanel() -> impl IntoView {
+    view! {
+        <div class="boot-panel" aria-label="x86-Sim 启动链路预览">
+            <div class="boot-panel-head">
+                <span>"boot trace"</span>
+                <strong>"0x7c00"</strong>
+            </div>
+            <div class="boot-lines">
+                <span><b>"BIOS"</b><em>"loaded"</em></span>
+                <span><b>"VGA"</b><em>"ready"</em></span>
+                <span><b>"DISK"</b><em>"mounted"</em></span>
+                <span><b>"CPU"</b><em>"enter loop"</em></span>
+            </div>
+        </div>
     }
 }
 
