@@ -1,4 +1,4 @@
-pub mod content;
+﻿pub mod content;
 
 use chrono::NaiveDate;
 use content::{
@@ -378,9 +378,9 @@ fn HomePage() -> impl IntoView {
                         <div class="home-hero-glow home-hero-glow-b" aria-hidden="true"></div>
                         <div class="home-hero-core">
                             <A
-                                href="/"
+                                href="/me"
                                 attr:class="home-hero-avatar-link"
-                                attr:aria-label="返回首页"
+                                attr:aria-label="进入主页"
                             >
                                 <img class="home-hero-avatar" src=AVATAR_IMAGE_PATH alt="站点头像" />
                             </A>
