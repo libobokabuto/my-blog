@@ -412,9 +412,13 @@ fn HomePreview(overview: HomeOverview) -> impl IntoView {
         latest_posts,
         latest_notes,
         featured_project,
+        recent_activity,
         focus_tags,
+        stats,
         ..
     } = overview;
+    let hero_stats = stats.iter().take(3).cloned().collect::<Vec<_>>();
+    let hero_focus_tags = focus_tags.clone();
 
     view! {
         <>
@@ -425,33 +429,49 @@ fn HomePreview(overview: HomeOverview) -> impl IntoView {
                         <span>"cosA"</span>
                     </div>
                     <h2>"Rust 学习、工程实践，还有正在推进的个人项目。"</h2>
+                    <p>"先看内容，再看过程。博客写正式内容，笔记留过程记录，项目页承接长期推进。"</p>
+                    <div class="home-metric-grid">
+                        {hero_stats
+                            .into_iter()
+                            .map(|stat| {
+                                view! {
+                                    <A href=stat.href attr:class="home-metric">
+                                        <strong>{stat.value}</strong>
+                                        <span>{stat.label}</span>
+                                        <small>{stat.detail}</small>
+                                    </A>
+                                }
+                            })
+                            .collect_view()}
+                    </div>
                     <div class="tag-row compact-tags">
-                        <A href="/blog" attr:class="chip soft">"全部博客"</A>
-                        <A href="/notes" attr:class="chip soft">"全部笔记"</A>
-                        <A href="/projects" attr:class="chip soft">"项目现场"</A>
-                        <A href="/me" attr:class="chip soft">"主页"</A>
+                        {hero_focus_tags
+                            .into_iter()
+                            .map(|tag| {
+                                view! { <A href=format!("/tags/{}", tag) attr:class="chip soft">{tag}</A> }
+                            })
+                            .collect_view()}
                     </div>
                 </article>
 
-                <article class="panel home-side-panel">
+                <article class="panel home-side-panel home-current-panel">
                     <div class="panel-head">
-                        <span class="meta-label">"继续浏览"</span>
-                        <A href="/search">"去搜索"</A>
+                        <span class="meta-label">"当前项目"</span>
+                        <A href="/projects">"进入项目页"</A>
                     </div>
-                    <div class="mini-list">
-                        <A href="/me" attr:class="mini-list-link">
-                            <strong>"主页"</strong>
-                            <span>"看状态、更新和常用入口。"</span>
-                        </A>
-                        <A href="/tags" attr:class="mini-list-link">
-                            <strong>"按主题浏览"</strong>
-                            <span>"按主题继续找内容。"</span>
-                        </A>
-                        <A href="/archive" attr:class="mini-list-link">
-                            <strong>"按时间浏览"</strong>
-                            <span>"按时间线回看更新。"</span>
-                        </A>
-                    </div>
+                    {featured_project
+                        .clone()
+                        .map(|project| view! { <ProjectShowcase project=project compact=true /> }.into_any())
+                        .unwrap_or_else(|| {
+                            view! {
+                                <div class="home-empty-panel">
+                                    <span class="meta-label">"项目预览"</span>
+                                    <p>"项目内容正在整理中。"</p>
+                                    <A href="/projects" attr:class="button ghost">"先看项目页"</A>
+                                </div>
+                            }
+                                .into_any()
+                        })}
                 </article>
             </div>
 
@@ -502,23 +522,16 @@ fn HomePreview(overview: HomeOverview) -> impl IntoView {
 
                 <article class="panel feature-panel compact content-preview-card">
                     <div class="panel-head">
-                        <span class="meta-label">"当前项目"</span>
-                        <A href="/projects">"进入项目页"</A>
+                        <span class="meta-label">"最近动态"</span>
+                        <A href="/me">"看完整主页"</A>
                     </div>
-                    {featured_project
-                        .map(|project| {
-                            view! {
-                                <A href=format!("/projects/{}", project.slug) attr:class="project-feature">
-                                    <span class="meta-badge badge-project">"PROJECT"</span>
-                                    <h3>{project.title}</h3>
-                                    <p class="blog-meta">{project.status.clone()}</p>
-                                    <p>{project.stack.join(" / ")}</p>
-                                    <small>{project.summary}</small>
-                                </A>
-                            }
-                                .into_any()
-                        })
-                        .unwrap_or_else(|| view! { <p>"项目内容正在整理中。"</p> }.into_any())}
+                    <div class="activity-list home-activity-rail">
+                        {recent_activity
+                            .into_iter()
+                            .take(3)
+                            .map(|item| view! { <ActivityCard item=item /> })
+                            .collect_view()}
+                    </div>
                 </article>
             </div>
 
@@ -538,14 +551,19 @@ fn HomePreview(overview: HomeOverview) -> impl IntoView {
 
                 <article class="panel timeline-panel">
                     <div class="panel-head">
-                        <span class="meta-label">"当前主题"</span>
+                        <span class="meta-label">"当前状态"</span>
                         <span>"本轮聚焦"</span>
                     </div>
-                    <div class="tag-row compact-tags">
-                        {focus_tags
+                    <div class="summary-list">
+                        {stats
                             .into_iter()
-                            .map(|tag| {
-                                view! { <A href=format!("/tags/{}", tag) attr:class="chip soft">{tag}</A> }
+                            .map(|stat| {
+                                view! {
+                                    <A href=stat.href attr:class="summary-item">
+                                        <strong>{stat.label}</strong>
+                                        <span>{stat.detail}</span>
+                                    </A>
+                                }
                             })
                             .collect_view()}
                     </div>
@@ -667,11 +685,30 @@ fn MeWorkbench(overview: HomeOverview) -> impl IntoView {
                 </article>
             </div>
 
-            <div class="me-layout profile-detail-grid">
-                <article class="panel profile-utility-panel">
+            <div class="me-focus-grid">
+                <article class="panel me-focus-card">
+                    <div class="panel-head">
+                        <span class="meta-label">"当前项目"</span>
+                        <A href="/projects">"继续看项目"</A>
+                    </div>
+                    {featured_project
+                        .clone()
+                        .map(|project| view! { <ProjectShowcase project=project compact=true /> }.into_any())
+                        .unwrap_or_else(|| {
+                            view! {
+                                <div class="home-empty-panel">
+                                    <span class="meta-label">"项目"</span>
+                                    <p>"暂无正在展示的项目。"</p>
+                                </div>
+                            }
+                                .into_any()
+                        })}
+                </article>
+
+                <article class="panel me-focus-card">
                     <div class="panel-head">
                         <span class="meta-label">"继续浏览"</span>
-                        <span>"补充入口"</span>
+                        <A href="/search">"打开搜索"</A>
                     </div>
                     <div class="entry-card-list compact-entry-grid">
                         {[
@@ -691,27 +728,8 @@ fn MeWorkbench(overview: HomeOverview) -> impl IntoView {
                             .collect_view()}
                     </div>
                 </article>
-
-                <article class="panel">
-                    <div class="panel-head">
-                        <span class="meta-label">"当前项目"</span>
-                        <A href="/projects">"全部项目"</A>
-                    </div>
-                    {featured_project
-                        .map(|project| {
-                            view! {
-                                <A href=format!("/projects/{}", project.slug) attr:class="project-feature expanded">
-                                    <span class="meta-label">{project.status.clone()}</span>
-                                    <h3>{project.title}</h3>
-                                    <small>{project.stack.join(" / ")}</small>
-                                    <p>{project.summary}</p>
-                                </A>
-                            }
-                                .into_any()
-                        })
-                        .unwrap_or_else(|| view! { <p>"项目内容正在整理中。"</p> }.into_any())}
-                </article>
             </div>
+
         </>
     }
 }
@@ -802,6 +820,99 @@ fn ActivityCard(item: HomeActivityItem) -> impl IntoView {
 }
 
 #[component]
+fn ProjectShowcase(
+    project: ProjectSummary,
+    #[prop(default = false)] compact: bool,
+) -> impl IntoView {
+    let preview_image = project_preview_image(&project.slug);
+
+    view! {
+        <article class=move || {
+            if compact {
+                "project-showcase project-showcase-compact"
+            } else {
+                "project-showcase"
+            }
+        }>
+            <div class="project-showcase-media">
+                {preview_image
+                    .map(|src| {
+                        view! {
+                            <img
+                                class="project-showcase-image"
+                                src=src
+                                alt=project.title.clone()
+                                loading="lazy"
+                            />
+                        }
+                            .into_any()
+                    })
+                    .unwrap_or_else(|| {
+                        view! {
+                            <div class="project-showcase-fallback">
+                                <span class="meta-badge badge-project">"PROJECT"</span>
+                                <strong>{project.status.clone()}</strong>
+                                <p>{project.stack.join(" / ")}</p>
+                                <div class="project-preview-lines">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </div>
+                            </div>
+                        }
+                            .into_any()
+                    })}
+            </div>
+
+            <div class="project-showcase-body">
+                <div class="panel-head">
+                    <span class="meta-badge badge-project">"PROJECT"</span>
+                    <span>{project.status.clone()}</span>
+                </div>
+                <h3>{project.title.clone()}</h3>
+                <p>{project.summary.clone()}</p>
+                <div class="tag-row compact-tags">
+                    {project
+                        .stack
+                        .iter()
+                        .map(|item| view! { <span class="chip soft">{item.clone()}</span> })
+                        .collect_view()}
+                </div>
+                <div class="project-links showcase-links">
+                    <A href=format!("/projects/{}", project.slug) attr:class="button ghost">
+                        "查看详情 →"
+                    </A>
+                    {project
+                        .repo_url
+                        .clone()
+                        .map(|url| {
+                            view! {
+                                <a href=url target="_blank" rel="noreferrer" class="button ghost">
+                                    "查看仓库"
+                                </a>
+                            }
+                                .into_any()
+                        })
+                        .unwrap_or_else(|| ().into_any())}
+                    {project
+                        .live_url
+                        .clone()
+                        .map(|url| {
+                            view! {
+                                <a href=url target="_blank" rel="noreferrer" class="button primary">
+                                    "查看演示"
+                                </a>
+                            }
+                                .into_any()
+                        })
+                        .unwrap_or_else(|| ().into_any())}
+                </div>
+            </div>
+        </article>
+    }
+}
+
+#[component]
 fn BlogListPage() -> impl IntoView {
     let blog_posts = Resource::new_blocking(|| (), |_| async move { list_blog_posts().await });
 
@@ -845,6 +956,32 @@ fn BlogListContent(posts: Vec<BlogPostSummary>) -> impl IntoView {
         .collect::<Vec<_>>();
     tags.sort();
     tags.dedup();
+
+    if posts.is_empty() {
+        return view! {
+            <div class="blog-empty-state">
+                <article class="panel blog-empty-copy">
+                    <span class="meta-badge badge-blog">"BLOG"</span>
+                    <h3>"博客还在等第一批正式文章。"</h3>
+                    <p>"这里会优先放 Rust、Leptos、x86-Sim 和个人站点建设过程里已经整理成型的内容。"</p>
+                    <div class="hero-actions">
+                        <A href="/notes" attr:class="button primary">"先看笔记"</A>
+                        <A href="/projects" attr:class="button ghost">"去看项目"</A>
+                    </div>
+                </article>
+                <article class="panel blog-empty-roadmap">
+                    <span class="meta-label">"接下来适合写"</span>
+                    <div class="timeline-list">
+                        <span>"Rust 学习里真正卡住过的问题。"</span>
+                        <span>"Leptos SSR 个人站点从路由到内容索引的整理。"</span>
+                        <span>"x86-Sim 从源码迁移到可运行工程的调试记录。"</span>
+                    </div>
+                </article>
+            </div>
+        }
+        .into_any();
+    }
+
     let featured_post = posts.first().cloned();
     let secondary_posts = posts.iter().skip(1).take(2).cloned().collect::<Vec<_>>();
 
@@ -900,16 +1037,10 @@ fn BlogListContent(posts: Vec<BlogPostSummary>) -> impl IntoView {
 
                 {posts
                     .into_iter()
-                    .enumerate()
-                    .map(|(index, post)| {
-                        let class = if index == 0 {
-                            "blog-card featured is-hidden"
-                        } else {
-                            "blog-card"
-                        };
-
+                    .skip(3)
+                    .map(|post| {
                         view! {
-                            <article class=class>
+                            <article class="blog-card">
                                 <span class="meta-badge badge-blog">"BLOG"</span>
                                 <p class="blog-meta">{format_meta_line(&post.date, &post.tags)}</p>
                                 <h3>
@@ -923,6 +1054,7 @@ fn BlogListContent(posts: Vec<BlogPostSummary>) -> impl IntoView {
             </div>
         </div>
     }
+    .into_any()
 }
 
 #[component]
@@ -1094,15 +1226,33 @@ fn NotesListContent(notes: Vec<NoteSummary>) -> impl IntoView {
         })
         .collect::<Vec<_>>();
     ordered_groups.extend(grouped.into_iter());
+    let board_overview = ordered_groups
+        .iter()
+        .map(|(board, items)| (board.clone(), items.len()))
+        .collect::<Vec<_>>();
 
     view! {
         <div class="notes-board-sections compact-notes-layout">
+            <div class="notes-board-overview">
+                {board_overview
+                    .into_iter()
+                    .map(|(board, count)| {
+                        view! {
+                            <A href=format!("#notes-board-{}", normalize_note_board(&board)) attr:class="board-summary-card">
+                                <span class="meta-label">{note_board_label(&board)}</span>
+                                <strong>{format!("{} 条", count)}</strong>
+                                <p>{note_board_description(&board)}</p>
+                            </A>
+                        }
+                    })
+                    .collect_view()}
+            </div>
             {ordered_groups
                 .into_iter()
                 .map(|(board, items)| {
                     let item_count = items.len();
                     view! {
-                        <section class="notes-group">
+                        <section class="notes-group" id=format!("notes-board-{}", normalize_note_board(&board))>
                             <div class="notes-group-head">
                                 <div>
                                     <div class="section-kicker">"笔记板块"</div>
@@ -1333,16 +1483,45 @@ fn ProjectsListContent(projects: Vec<ProjectSummary>) -> impl IntoView {
         .collect::<Vec<_>>();
     active.sort_by_key(|project| project.status.clone());
     archived.sort_by_key(|project| project.title.clone());
+    let featured_project = active.first().cloned();
+    let supporting_active = active.iter().skip(1).cloned().collect::<Vec<_>>();
+    let active_count = active.len();
 
     view! {
         <div class="project-section-list">
+            {featured_project
+                .map(|project| {
+                    view! {
+                        <section class="project-showcase-shell">
+                            <div class="panel-head">
+                                <span class="meta-label">"主推作品"</span>
+                                <span>{format!("{} 个项目", active_count)}</span>
+                            </div>
+                            <ProjectShowcase project=project />
+                        </section>
+                    }
+                        .into_any()
+                })
+                .unwrap_or_else(|| {
+                    view! {
+                        <section class="project-showcase-shell">
+                            <article class="panel blog-empty-copy">
+                                <span class="meta-badge badge-project">"PROJECT"</span>
+                                <h3>"还没有正在展示的项目。"</h3>
+                                <p>"等项目材料整理好以后，这里会优先展示长期推进中的作品。"</p>
+                            </article>
+                        </section>
+                    }
+                        .into_any()
+                })}
+
             <section class="project-section-block">
                 <div class="panel-head">
                     <span class="meta-label">"进行中与持续整理"</span>
-                    <span>{format!("{} 个项目", active.len())}</span>
+                    <span>{format!("{} 个项目", supporting_active.len())}</span>
                 </div>
                 <div class="projects-grid">
-                    {active
+                    {supporting_active
                         .into_iter()
                         .map(|project| view! { <ProjectCard project=project /> })
                         .collect_view()}
@@ -1354,12 +1533,25 @@ fn ProjectsListContent(projects: Vec<ProjectSummary>) -> impl IntoView {
                     <span class="meta-label">"已归档"</span>
                     <span>{format!("{} 个项目", archived.len())}</span>
                 </div>
-                <div class="projects-grid">
-                    {archived
-                        .into_iter()
-                        .map(|project| view! { <ProjectCard project=project /> })
-                        .collect_view()}
-                </div>
+                {if archived.is_empty() {
+                    view! {
+                        <div class="project-archive-empty">
+                            <span class="meta-label">"暂无归档项目"</span>
+                            <p>"当前页面先把仍在推进和可运行的项目放在前面。"</p>
+                        </div>
+                    }
+                        .into_any()
+                } else {
+                    view! {
+                        <div class="projects-grid">
+                            {archived
+                                .into_iter()
+                                .map(|project| view! { <ProjectCard project=project /> })
+                                .collect_view()}
+                        </div>
+                    }
+                        .into_any()
+                }}
             </section>
         </div>
     }
@@ -1367,8 +1559,34 @@ fn ProjectsListContent(projects: Vec<ProjectSummary>) -> impl IntoView {
 
 #[component]
 fn ProjectCard(project: ProjectSummary) -> impl IntoView {
+    let preview_image = project_preview_image(&project.slug);
+
     view! {
         <article class="project-card">
+            <div class="project-card-visual">
+                {preview_image
+                    .map(|src| {
+                        view! {
+                            <img
+                                class="project-card-image"
+                                src=src
+                                alt=project.title.clone()
+                                loading="lazy"
+                            />
+                        }
+                            .into_any()
+                    })
+                    .unwrap_or_else(|| {
+                        view! {
+                            <div class="project-card-fallback">
+                                <span>{project.status.clone()}</span>
+                                <strong>{project.title.clone()}</strong>
+                                <small>{project.stack.join(" / ")}</small>
+                            </div>
+                        }
+                            .into_any()
+                    })}
+            </div>
             <div class="project-card-head">
                 <span class="meta-badge badge-project">"PROJECT"</span>
                 <p class="blog-meta">{project.status.clone()}</p>
@@ -3381,6 +3599,13 @@ fn content_badge_by_href(href: &str) -> (&'static str, &'static str) {
         ("PROJECT", "badge-project")
     } else {
         ("ENTRY", "badge-now")
+    }
+}
+
+fn project_preview_image(slug: &str) -> Option<&'static str> {
+    match slug {
+        "my-blog" => Some("/images/projects/my-blog/projects-light.jpeg"),
+        _ => None,
     }
 }
 
