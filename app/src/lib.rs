@@ -374,42 +374,50 @@ fn HomePage() -> impl IntoView {
         <Title text="首页 | cosA" />
         <Meta
             name="description"
-            content="查看这个内容驱动的 Rust 个人站首页，快速进入公开工作台、博客、笔记、项目与搜索入口。"
+            content="一个以内容为先的 Rust 个人站首页，快速进入博客、笔记、项目和当前工作台。"
         />
         <PageHeadExtras
             title="首页 | cosA".to_string()
-            description="查看这个内容驱动的 Rust 个人站首页，快速进入公开工作台、博客、笔记、项目与搜索入口。".to_string()
+            description="一个以内容为先的 Rust 个人站首页，快速进入博客、笔记、项目和当前工作台。".to_string()
             canonical_path="/".to_string()
         />
-        <section class="home-canvas">
-            <div class="home-hero-stage">
-                <div class="home-hero-copy">
-                <div class="section-kicker">"首页"</div>
-                <p class="eyebrow">"Landing / content first"</p>
-                <h1>"先找到值得读的内容，再决定要不要继续认识我。"</h1>
-                <p class="lede">"先看文章、笔记和项目，再决定要不要继续逛下去。"</p>
-                <div class="hero-actions">
-                    <A href="/blog" attr:class="button primary">"先读博客"</A>
-                    <A href="/notes" attr:class="button ghost">"再看笔记"</A>
-                    <A href="/me" attr:class="button ghost">"了解我现在在做什么"</A>
+        <section class="home-shell">
+            <div class="home-canvas">
+                <div class="home-hero-stage">
+                    <div class="home-hero-copy">
+                        <div class="section-kicker">"首页"</div>
+                        <p class="eyebrow">"Content first"</p>
+                        <h1>"先看内容，再决定要不要认识我。"</h1>
+                        <p class="lede">"把博客、笔记和项目摊开，让首页像一张完整画面，而不是一摞重复的卡片。"</p>
+                        <div class="hero-actions">
+                            <A href="/blog" attr:class="button primary">"先读博客"</A>
+                            <A href="/notes" attr:class="button ghost">"再看笔记"</A>
+                            <A href="/me" attr:class="button ghost">"了解我现在在做什么"</A>
+                        </div>
+                    </div>
+                    <div class="home-hero-orbit" aria-hidden="true">
+                        <div class="home-hero-glow home-hero-glow-a"></div>
+                        <div class="home-hero-glow home-hero-glow-b"></div>
+                        <div class="home-hero-core">
+                            <img class="home-hero-avatar" src=AVATAR_IMAGE_PATH alt="" />
+                            <strong>"x86-Sim"</strong>
+                            <span class="meta-label">"当前工作"</span>
+                        </div>
+                        <span class="home-orbit-chip home-orbit-chip-a">"Rust"</span>
+                        <span class="home-orbit-chip home-orbit-chip-b">"Leptos"</span>
+                        <span class="home-orbit-chip home-orbit-chip-c">"Boot"</span>
+                    </div>
                 </div>
-                </div>
-                <div class="home-hero-orbit" aria-hidden="true">
-                    <img class="home-hero-avatar" src=AVATAR_IMAGE_PATH alt="" />
-                    <span>"Rust"</span>
-                    <span>"Leptos"</span>
-                    <span>"x86-Sim"</span>
-                </div>
-            </div>
 
-            <Suspense fallback=move || view! { <PageLoading label="正在整理首页内容..." /> }>
-                {move || {
-                    home_overview.get().map(|result| match result {
-                        Ok(overview) => view! { <HomePreview overview=overview /> }.into_any(),
-                        Err(error) => view! { <PageError message=error.to_string() /> }.into_any(),
-                    })
-                }}
-            </Suspense>
+                <Suspense fallback=move || view! { <PageLoading label="正在整理首页内容..." /> }>
+                    {move || {
+                        home_overview.get().map(|result| match result {
+                            Ok(overview) => view! { <HomePreview overview=overview /> }.into_any(),
+                            Err(error) => view! { <PageError message=error.to_string() /> }.into_any(),
+                        })
+                    }}
+                </Suspense>
+            </div>
         </section>
     }
 }
@@ -417,180 +425,112 @@ fn HomePage() -> impl IntoView {
 #[component]
 fn HomePreview(overview: HomeOverview) -> impl IntoView {
     let HomeOverview {
-        latest_posts,
-        latest_notes,
         featured_project,
         recent_activity,
         focus_tags,
         stats,
         ..
     } = overview;
-    let hero_stats = stats.iter().take(3).cloned().collect::<Vec<_>>();
     let hero_focus_tags = focus_tags.clone();
     let site_index_stats = stats.iter().take(5).cloned().collect::<Vec<_>>();
 
     view! {
-        <div class="home-layout">
-            <div class="home-feature-grid">
-                <article class="panel home-editorial-panel">
-                    <div class="panel-head">
-                        <span class="meta-label">"内容方向"</span>
-                        <span>"cosA"</span>
-                    </div>
-                    <h2>"Rust 学习、工程实践，还有正在推进的个人项目。"</h2>
-                    <p>"先看内容，再看过程。博客写正式内容，笔记留过程记录，项目页承接长期推进。"</p>
-                    <div class="home-metric-grid">
-                        {hero_stats
-                            .into_iter()
-                            .map(|stat| {
-                                view! {
-                                    <A href=stat.href attr:class="home-metric">
-                                        <strong>{stat.value}</strong>
-                                        <span>{stat.label}</span>
-                                        <small>{stat.detail}</small>
-                                    </A>
-                                }
-                            })
-                            .collect_view()}
-                    </div>
-                    <div class="tag-row compact-tags">
-                        {hero_focus_tags
-                            .into_iter()
-                            .map(|tag| {
-                                view! { <A href=format!("/tags/{}", tag) attr:class="chip soft">{tag}</A> }
-                            })
-                            .collect_view()}
-                    </div>
-                </article>
+            <div class="home-layout">
+                <aside class="home-left-rail">
+                    <HomeWorkbenchStrip />
 
-                <article class="panel home-side-panel home-current-panel">
-                    <div class="panel-head">
-                        <span class="meta-label">"当前项目"</span>
-                        <A href="/projects">"进入项目页"</A>
-                    </div>
-                    {featured_project
-                        .clone()
-                        .map(|project| view! { <ProjectShowcase project=project compact=true /> }.into_any())
-                        .unwrap_or_else(|| {
+                    <section class="rail-module home-rail-module home-quick-rail">
+                        <div class="panel-head">
+                            <span class="meta-label">"快速入口"</span>
+                            <A href="/archive">"总索引"</A>
+                        </div>
+                        <div class="rail-link-list">
+                            <A href="/blog" attr:class="rail-link">
+                                <strong>"博客"</strong>
+                                <span>"正式输出和长篇记录"</span>
+                            </A>
+                            <A href="/notes" attr:class="rail-link">
+                                <strong>"笔记"</strong>
+                                <span>"过程、草稿和临时想法"</span>
+                            </A>
+                            <A href="/projects" attr:class="rail-link">
+                                <strong>"项目"</strong>
+                                <span>"推进中的东西和演示"</span>
+                            </A>
+                        </div>
+                        <div class="tag-row compact-tags rail-tag-row">
+                            {hero_focus_tags
+                                .into_iter()
+                                .take(6)
+                                .map(|tag| {
+                                    view! { <A href=format!("/tags/{}", tag) attr:class="chip soft">{tag}</A> }
+                                })
+                                .collect_view()}
+                        </div>
+                    </section>
+                </aside>
+
+                <section class="home-main-stream">
+                    <article class="stream-section home-story-stage">
+                        <div class="panel-head">
+                            <span class="meta-label">"当前重点"</span>
+                            <span>"内容流 / project story"</span>
+                        </div>
+    {featured_project
+                            .clone()
+                            .map(|project| view! { <ProjectShowcase project=project compact=false /> }.into_any())
+                            .unwrap_or_else(|| {
+                                view! {
+                                    <div class="home-empty-panel home-story-empty">
+                                        <span class="meta-label">"项目预览"</span>
+                                        <p>"项目内容正在整理中。"</p>
+                                        <A href="/projects" attr:class="button ghost">"查看项目"</A>
+                                    </div>
+                                }
+                                    .into_any()
+                            })}
+                    </article>
+
+                </section>
+
+                <aside class="home-right-rail">
+                    <HomeSiteIndex stats=site_index_stats />
+
+                    <section class="rail-module home-rail-module home-activity-module">
+                        <div class="panel-head">
+                            <span class="meta-label">"最近动态"</span>
+                            <A href="/me">"进入主页面"</A>
+                        </div>
+                        {if recent_activity.is_empty() {
                             view! {
-                                <div class="home-empty-panel">
-                                    <span class="meta-label">"项目预览"</span>
-                                    <p>"项目内容正在整理中。"</p>
-                                    <A href="/projects" attr:class="button ghost">"先看项目页"</A>
+                                <div class="home-empty-panel home-activity-empty">
+                                    <span class="meta-label">"暂无动态"</span>
+                                    <p>"最近没有新动作，先去主页面看看别的块。"</p>
                                 </div>
                             }
                                 .into_any()
-                        })}
-                </article>
+                        } else {
+                            view! {
+                                <div class="activity-list home-activity-rail">
+                                    {recent_activity
+                                        .into_iter()
+                                        .take(3)
+                                        .map(|item| view! { <ActivityCard item=item /> })
+                                        .collect_view()}
+                                </div>
+                            }
+                                .into_any()
+                        }}
+                    </section>
+                </aside>
             </div>
-
-            <div class="home-workbench-grid">
-                <HomeWorkbenchStrip />
-                <HomeSiteIndex stats=site_index_stats />
-            </div>
-
-            <div class="home-panels v3 home-preview-grid">
-                <article class="panel split-panel content-preview-card latest-posts-panel">
-                    <div class="panel-head">
-                        <span class="meta-label">"先读这两篇"</span>
-                        <A href="/blog">"查看全部博客"</A>
-                    </div>
-                    <div class="mini-list">
-                        {latest_posts
-                            .into_iter()
-                            .take(2)
-                            .map(|post| {
-                                view! {
-                                    <A href=format!("/blog/{}", post.slug) attr:class="mini-list-link">
-                                        <span class="meta-badge badge-blog">"BLOG"</span>
-                                        <strong>{post.title}</strong>
-                                        <span>{post.summary}</span>
-                                    </A>
-                                }
-                            })
-                            .collect_view()}
-                    </div>
-                </article>
-
-                <article class="panel feature-panel compact content-preview-card">
-                    <div class="panel-head">
-                        <span class="meta-label">"顺手再看"</span>
-                        <A href="/notes">"查看全部笔记"</A>
-                    </div>
-                    <div class="mini-list">
-                        {latest_notes
-                            .into_iter()
-                            .take(2)
-                            .map(|note| {
-                                view! {
-                                    <A href=format!("/notes/{}", note.slug) attr:class="mini-list-link">
-                                        <span class="meta-badge badge-note">"NOTE"</span>
-                                        <strong>{note.title}</strong>
-                                        <span>{note.summary}</span>
-                                    </A>
-                                }
-                            })
-                            .collect_view()}
-                    </div>
-                </article>
-
-                <article class="panel feature-panel compact content-preview-card">
-                    <div class="panel-head">
-                        <span class="meta-label">"最近动态"</span>
-                        <A href="/me">"看完整主页"</A>
-                    </div>
-                    <div class="activity-list home-activity-rail">
-                        {recent_activity
-                            .into_iter()
-                            .take(3)
-                            .map(|item| view! { <ActivityCard item=item /> })
-                            .collect_view()}
-                    </div>
-                </article>
-            </div>
-
-            <div class="home-reference-grid compact-home-footer">
-                <article class="panel manifesto-panel">
-                    <div class="panel-head">
-                        <span class="meta-label">"关于我"</span>
-                        <span>"当前关注"</span>
-                    </div>
-                    <p>"主要在写 Rust、Leptos、个人项目和学习过程里的实际问题。"</p>
-                    <div class="manifesto-list">
-                        <span>"正式内容放在博客。"</span>
-                        <span>"过程记录放在笔记。"</span>
-                        <span>"长期推进的东西放在项目页。"</span>
-                    </div>
-                </article>
-
-                <article class="panel timeline-panel">
-                    <div class="panel-head">
-                        <span class="meta-label">"当前状态"</span>
-                        <span>"本轮聚焦"</span>
-                    </div>
-                    <div class="summary-list">
-                        {stats
-                            .into_iter()
-                            .map(|stat| {
-                                view! {
-                                    <A href=stat.href attr:class="summary-item">
-                                        <strong>{stat.label}</strong>
-                                        <span>{stat.detail}</span>
-                                    </A>
-                                }
-                            })
-                            .collect_view()}
-                    </div>
-                </article>
-            </div>
-        </div>
-    }
+        }
 }
 
 #[component]
 fn HomeWorkbenchStrip() -> impl IntoView {
     view! {
-        <section class="panel workbench-panel">
+        <section class="rail-module workbench-panel">
             <div class="panel-head">
                 <span class="meta-label">"当前工作台"</span>
                 <span class="workbench-status"><span></span>"live"</span>
@@ -622,9 +562,9 @@ fn HomeWorkbenchStrip() -> impl IntoView {
 #[component]
 fn HomeSiteIndex(stats: Vec<HomeStat>) -> impl IntoView {
     view! {
-        <section class="panel site-index-panel">
+        <section class="rail-module site-index-panel">
             <div class="panel-head">
-                <span class="meta-label">"站点索引仪表"</span>
+                <span class="meta-label">"站点索引"</span>
                 <A href="/archive">"看归档"</A>
             </div>
             <div class="site-index-meter">
@@ -644,7 +584,6 @@ fn HomeSiteIndex(stats: Vec<HomeStat>) -> impl IntoView {
         </section>
     }
 }
-
 #[component]
 fn MePage() -> impl IntoView {
     let home_overview = Resource::new_blocking(|| (), |_| async move { get_home_overview().await });
@@ -897,7 +836,8 @@ fn ProjectShowcase(
     project: ProjectSummary,
     #[prop(default = false)] compact: bool,
 ) -> impl IntoView {
-    let preview_image = project_preview_image(&project.slug);
+    let preview_images = project_preview_images(&project.slug);
+    let preview_image = preview_images.first().copied();
     let is_x86_project = project.slug == "x86-sim";
 
     view! {
@@ -909,33 +849,64 @@ fn ProjectShowcase(
             }
         }>
             <div class="project-showcase-media">
-                {preview_image
-                    .map(|src| {
-                        view! {
-                            <img
-                                class="project-showcase-image"
-                                src=src
-                                alt=project.title.clone()
-                                loading="lazy"
-                            />
-                        }
-                            .into_any()
-                    })
-                    .unwrap_or_else(|| {
-                        view! {
-                            <div class="project-showcase-fallback">
-                                <span class="meta-badge badge-project">"PROJECT"</span>
-                                <strong>{project.status.clone()}</strong>
-                                <p>{project.stack.join(" / ")}</p>
-                                <div class="project-preview-lines">
-                                    <span></span>
-                                    <span></span>
-                                    <span></span>
+                {if preview_images.len() > 1 && !compact {
+                    view! {
+                        <div class="project-showcase-gallery">
+                            {preview_images
+                                .into_iter()
+                                .enumerate()
+                                .map(|(index, src)| {
+                                    view! {
+                                        <figure class=move || {
+                                            if index == 0 {
+                                                "project-gallery-shot project-gallery-shot-wide"
+                                            } else {
+                                                "project-gallery-shot"
+                                            }
+                                        }>
+                                            <img
+                                                class="project-showcase-image"
+                                                src=src
+                                                alt=project.title.clone()
+                                                loading="lazy"
+                                            />
+                                        </figure>
+                                    }
+                                        .into_any()
+                                })
+                                .collect_view()}
+                        </div>
+                    }
+                        .into_any()
+                } else {
+                    preview_image
+                        .map(|src| {
+                            view! {
+                                <img
+                                    class="project-showcase-image"
+                                    src=src
+                                    alt=project.title.clone()
+                                    loading="lazy"
+                                />
+                            }
+                                .into_any()
+                        })
+                        .unwrap_or_else(|| {
+                            view! {
+                                <div class="project-showcase-fallback">
+                                    <span class="meta-badge badge-project">"PROJECT"</span>
+                                    <strong>{project.status.clone()}</strong>
+                                    <p>{project.stack.join(" / ")}</p>
+                                    <div class="project-preview-lines">
+                                        <span></span>
+                                        <span></span>
+                                        <span></span>
+                                    </div>
                                 </div>
-                            </div>
-                        }
-                            .into_any()
-                    })}
+                            }
+                                .into_any()
+                        })
+                }}
             </div>
 
             <div class="project-showcase-body">
@@ -1758,6 +1729,7 @@ fn ProjectDetailContent(project: ProjectEntry) -> impl IntoView {
     let title_text = format!("{} | cosA", project.title);
     let description_text = project.summary.clone();
     let related = project.related.clone();
+    let preview_images = project_preview_images(&project.slug);
 
     view! {
         <Title text=title_text.clone() />
@@ -1784,7 +1756,6 @@ fn ProjectDetailContent(project: ProjectEntry) -> impl IntoView {
                 <header class="article-header project-article-header">
                     <p class="blog-meta">{project.status.clone()}</p>
                     <h3>{project.title.clone()}</h3>
-                    <p class="note-summary">{project.summary.clone()}</p>
                     <div class="tag-row compact-tags">
                         <span class="chip soft">{format!("角色：{}", project.role.clone())}</span>
                     </div>
@@ -1825,6 +1796,39 @@ fn ProjectDetailContent(project: ProjectEntry) -> impl IntoView {
                 </header>
 
                 <div class="project-facts-grid">
+                    {if !preview_images.is_empty() {
+                        view! {
+                            <div class="project-gallery-block project-gallery-block-wide">
+                                <div class="panel-head">
+                                    <span class="meta-label">"项目图片"</span>
+                                    <span>"现场画面"</span>
+                                </div>
+                                <div class="project-detail-gallery">
+                                    {preview_images
+                                        .iter()
+                                        .enumerate()
+                                        .map(|(index, src)| {
+                                            view! {
+                                                <figure class=move || {
+                                                    if index == 0 {
+                                                        "project-detail-shot project-detail-shot-wide"
+                                                    } else {
+                                                        "project-detail-shot"
+                                                    }
+                                                }>
+                                                    <img src=*src alt=project.title.clone() loading="lazy" />
+                                                </figure>
+                                            }
+                                                .into_any()
+                                        })
+                                        .collect_view()}
+                                </div>
+                            </div>
+                        }
+                            .into_any()
+                    } else {
+                        ().into_any()
+                    }}
                     <div class="identity-card">
                         <span class="meta-label">"背景"</span>
                         <p>{project.background.clone()}</p>
@@ -3699,11 +3703,19 @@ fn content_badge_by_href(href: &str) -> (&'static str, &'static str) {
     }
 }
 
-fn project_preview_image(slug: &str) -> Option<&'static str> {
+fn project_preview_images(slug: &str) -> Vec<&'static str> {
     match slug {
-        "my-blog" => Some("/images/projects/my-blog/projects-light.jpeg"),
-        _ => None,
+        "my-blog" => vec!["/images/projects/my-blog/projects-light.jpeg"],
+        "x86-sim" => vec![
+            "/images/projects/x86-sim/grub-screen.png",
+            "/images/projects/x86-sim/boot-log.png",
+        ],
+        _ => Vec::new(),
     }
+}
+
+fn project_preview_image(slug: &str) -> Option<&'static str> {
+    project_preview_images(slug).into_iter().next()
 }
 
 fn note_board_label(value: &str) -> &'static str {
