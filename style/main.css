@@ -217,6 +217,19 @@ a {
   }
 }
 
+@keyframes home-ambient {
+  0%,
+  100% {
+    opacity: 0.7;
+    transform: translate3d(-1.5rem, -0.5rem, 0) scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translate3d(1.5rem, 0.7rem, 0) scale(1.04);
+  }
+}
+
 .page-shell {
   width: var(--content-width);
   margin: 0 auto;
@@ -680,6 +693,43 @@ a {
   gap: 1.2rem;
 }
 
+.home-canvas {
+  position: relative;
+  display: grid;
+  gap: 1.5rem;
+  width: 100%;
+  padding: 1rem 0 0;
+  overflow-x: clip;
+}
+
+.home-canvas::before,
+.home-canvas::after {
+  content: "";
+  position: absolute;
+  inset: -1rem;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.home-canvas::before {
+  background:
+    radial-gradient(circle at 8% 12%, color-mix(in srgb, var(--accent) 15%, transparent), transparent 30%),
+    radial-gradient(circle at 90% 0%, color-mix(in srgb, var(--accent-project) 12%, transparent), transparent 22%),
+    linear-gradient(180deg, color-mix(in srgb, var(--panel) 55%, transparent), transparent 45%);
+  filter: blur(8px);
+}
+
+.home-canvas::after {
+  inset: 1rem;
+  border-radius: 2rem;
+  background-image:
+    linear-gradient(90deg, transparent 0 49.5%, color-mix(in srgb, var(--line) 82%, transparent) 50%, transparent 50.5%),
+    linear-gradient(180deg, transparent 0 49.5%, color-mix(in srgb, var(--line) 56%, transparent) 50%, transparent 50.5%);
+  background-size: 18rem 18rem;
+  opacity: 0.22;
+  animation: home-ambient 22s ease-in-out infinite;
+}
+
 .hero-grid,
 .home-panels,
 .home-reference-grid,
@@ -701,6 +751,59 @@ a {
   max-width: 46rem;
   margin: 0;
   text-align: left;
+}
+
+.home-hero-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(16rem, 0.8fr);
+  gap: 1.25rem;
+  align-items: center;
+  min-height: 22rem;
+  padding: clamp(1.2rem, 2vw, 1.8rem);
+  border-radius: var(--radius-xl);
+  border: 1px solid color-mix(in srgb, var(--line) 78%, transparent);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--surface-card) 72%, transparent), color-mix(in srgb, var(--panel) 28%, transparent)),
+    color-mix(in srgb, var(--surface-card) 58%, transparent);
+  box-shadow: var(--shadow-lg);
+}
+
+.home-hero-stage .home-hero-copy {
+  max-width: 58rem;
+}
+
+.home-hero-orbit {
+  display: grid;
+  place-items: center;
+  gap: 0.8rem;
+  min-height: 18rem;
+  padding: 1.2rem;
+  border: 1px solid color-mix(in srgb, var(--line) 85%, transparent);
+  border-radius: calc(var(--radius-xl) - 6px);
+  background:
+    radial-gradient(circle at 50% 24%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 36%),
+    color-mix(in srgb, var(--surface-card) 78%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.home-hero-avatar {
+  width: 6.25rem;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  box-shadow: var(--shadow-md);
+}
+
+.home-hero-orbit span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.1rem;
+  padding: 0.35rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--text-soft);
+  background: color-mix(in srgb, var(--surface-card) 88%, transparent);
 }
 
 .home-feature-grid {
@@ -726,6 +829,98 @@ a {
 
 .home-side-panel {
   align-self: start;
+}
+
+.home-layout {
+  display: grid;
+  grid-template-columns: minmax(14rem, 0.72fr) minmax(0, 1.38fr) minmax(14rem, 0.82fr);
+  gap: 1.2rem;
+  align-items: start;
+  margin-top: 0.4rem;
+}
+
+.home-layout > * {
+  min-width: 0;
+}
+
+.home-layout .panel {
+  background: transparent;
+  box-shadow: none;
+}
+
+.home-layout .panel::before {
+  content: none;
+}
+
+.home-layout .home-feature-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  grid-column: 2;
+}
+
+.home-layout .home-workbench-grid {
+  display: grid;
+  gap: 1rem;
+  grid-column: 1;
+  grid-row: 1 / span 3;
+  align-content: start;
+  position: sticky;
+  top: 6.8rem;
+}
+
+.home-layout .home-panels {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  grid-column: 2;
+}
+
+.home-layout .home-reference-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+  grid-column: 3;
+  grid-row: 1 / span 3;
+  align-content: start;
+  position: sticky;
+  top: 6.8rem;
+}
+
+.home-layout .home-editorial-panel,
+.home-layout .home-current-panel,
+.home-layout .content-preview-card,
+.home-layout .manifesto-panel,
+.home-layout .timeline-panel,
+.home-layout .workbench-panel,
+.home-layout .site-index-panel {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+.home-layout .home-editorial-panel,
+.home-layout .home-current-panel,
+.home-layout .content-preview-card,
+.home-layout .manifesto-panel,
+.home-layout .timeline-panel {
+  padding-block: 0.15rem 0.5rem;
+  border-top: 1px solid var(--line);
+}
+
+.home-layout .home-editorial-panel {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.home-layout .home-current-panel {
+  padding-top: 0.35rem;
+}
+
+.home-layout .home-current-panel .project-showcase,
+.home-layout .content-preview-card .mini-list,
+.home-layout .timeline-panel .summary-list {
+  gap: 0.55rem;
 }
 
 .hero-copy h1 {
@@ -2552,12 +2747,12 @@ a {
   }
 
   .hero-grid,
+  .home-layout,
   .home-panels,
   .home-feature-grid,
   .home-workbench-grid,
   .home-entry-grid,
   .home-reference-grid,
-  .next-writing-panel,
   .project-showcase,
   .blog-empty-state,
   .me-focus-grid,
@@ -2674,6 +2869,21 @@ a {
     padding: 1rem;
   }
 
+  .home-canvas {
+    gap: 1rem;
+  }
+
+  .home-hero-stage {
+    grid-template-columns: 1fr;
+    min-height: auto;
+    gap: 1rem;
+  }
+
+  .home-hero-orbit {
+    min-height: auto;
+    padding: 1rem;
+  }
+
   .profile-facts {
     grid-template-columns: 1fr 1fr;
   }
@@ -2702,6 +2912,19 @@ a {
 
   .home-route-grid {
     grid-template-columns: 1fr;
+  }
+
+  .home-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .home-layout .home-feature-grid,
+  .home-layout .home-workbench-grid,
+  .home-layout .home-panels,
+  .home-layout .home-reference-grid {
+    grid-column: auto;
+    grid-row: auto;
+    position: static;
   }
 
   .workbench-lane,

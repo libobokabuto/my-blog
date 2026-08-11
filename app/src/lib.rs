@@ -381,8 +381,9 @@ fn HomePage() -> impl IntoView {
             description="查看这个内容驱动的 Rust 个人站首页，快速进入公开工作台、博客、笔记、项目与搜索入口。".to_string()
             canonical_path="/".to_string()
         />
-        <section class="preview-section hero home-section">
-            <div class="home-hero-copy">
+        <section class="home-canvas">
+            <div class="home-hero-stage">
+                <div class="home-hero-copy">
                 <div class="section-kicker">"首页"</div>
                 <p class="eyebrow">"Landing / content first"</p>
                 <h1>"先找到值得读的内容，再决定要不要继续认识我。"</h1>
@@ -391,6 +392,13 @@ fn HomePage() -> impl IntoView {
                     <A href="/blog" attr:class="button primary">"先读博客"</A>
                     <A href="/notes" attr:class="button ghost">"再看笔记"</A>
                     <A href="/me" attr:class="button ghost">"了解我现在在做什么"</A>
+                </div>
+                </div>
+                <div class="home-hero-orbit" aria-hidden="true">
+                    <img class="home-hero-avatar" src=AVATAR_IMAGE_PATH alt="" />
+                    <span>"Rust"</span>
+                    <span>"Leptos"</span>
+                    <span>"x86-Sim"</span>
                 </div>
             </div>
 
@@ -422,7 +430,7 @@ fn HomePreview(overview: HomeOverview) -> impl IntoView {
     let site_index_stats = stats.iter().take(5).cloned().collect::<Vec<_>>();
 
     view! {
-        <>
+        <div class="home-layout">
             <div class="home-feature-grid">
                 <article class="panel home-editorial-panel">
                     <div class="panel-head">
@@ -575,7 +583,7 @@ fn HomePreview(overview: HomeOverview) -> impl IntoView {
                     </div>
                 </article>
             </div>
-        </>
+        </div>
     }
 }
 
