@@ -186,6 +186,7 @@ fn SiteHeader() -> impl IntoView {
         <header class="topbar topbar-v2">
             <div class="topbar-layout">
                 <nav class="topnav topnav-v2 topbar-nav" attr:aria-label="主导航">
+                    <NavLink href="/" label="首页" hint="回到内容入口与精选阅读。" />
                     <NavLink href="/blog" label="博客" hint="正式文章与阶段性输出。" />
                     <NavLink href="/notes" label="笔记" hint="学习记录、实验过程和草稿想法。" />
                     <NavLink href="/projects" label="项目" hint="长期项目、进度和结果。" />
@@ -698,6 +699,34 @@ fn MeWorkbench(overview: HomeOverview) -> impl IntoView {
                         total=contribution_total
                     />
                 </article>
+
+                <aside class="panel profile-card profile-intro-card">
+                    <div class="panel-head">
+                        <span class="meta-label">"关于我"</span>
+                        <A href="/about">"查看简介"</A>
+                    </div>
+                    <p class="profile-intro-lede">
+                        "我主要写 Rust / Leptos，也在整理 x86-Sim、博客重构和一些工程笔记。这个主页更像我的公开工作台，而不是单纯的作品陈列。"
+                    </p>
+                    <div class="summary-list profile-intro-list">
+                        <div class="summary-item">
+                            <span>"我在做"</span>
+                            <p>"x86-Sim 的 BIOS 加载链路、设备初始化和调试。"</p>
+                        </div>
+                        <div class="summary-item">
+                            <span>"我在记"</span>
+                            <p>"Rust、Leptos、页面结构，以及一路上踩过的坑。"</p>
+                        </div>
+                        <div class="summary-item">
+                            <span>"我想做成"</span>
+                            <p>"一个既能看内容，也能看状态的个人主页。"</p>
+                        </div>
+                    </div>
+                    <div class="hero-actions profile-actions profile-intro-actions">
+                        <A href="/about" attr:class="button ghost">"更多关于我"</A>
+                        <A href="/projects" attr:class="button ghost">"看项目"</A>
+                    </div>
+                </aside>
             </div>
 
             <div class="me-layout profile-content-grid">

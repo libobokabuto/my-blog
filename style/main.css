@@ -1645,7 +1645,7 @@ a {
 
 .profile-shell {
   display: grid;
-  grid-template-columns: 320px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 320px) minmax(0, 1fr) minmax(0, 280px);
   gap: var(--space-4);
   align-items: start;
 }
@@ -1719,6 +1719,31 @@ a {
 
 .profile-actions {
   margin-top: 0.2rem;
+}
+
+.profile-intro-card {
+  gap: 0.9rem;
+  align-content: start;
+}
+
+.profile-intro-lede {
+  margin: 0;
+  color: var(--text-soft);
+  line-height: 1.75;
+}
+
+.profile-intro-list {
+  gap: 0.7rem;
+}
+
+.profile-intro-card .summary-item p {
+  margin: 0;
+  color: var(--text-soft);
+  line-height: 1.65;
+}
+
+.profile-intro-actions {
+  flex-wrap: wrap;
 }
 
 .contribution-panel {
