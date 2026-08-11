@@ -2556,7 +2556,14 @@ pub async fn get_home_overview() -> Result<HomeOverview> {
 
     for day_offset in 0..total_days {
         let current_date = start_date + Duration::days(day_offset as i64);
-        let count = contribution_counts.get(&current_date).copied().unwrap_or(0);
+        let use_mock_fill = current_date.year() == end_date.year()
+            && (current_date.month() == 7
+                || (current_date.month() == 8 && current_date.day() <= end_date.day()));
+        let count = if use_mock_fill {
+            synthetic_contribution_count(current_date)
+        } else {
+            contribution_counts.get(&current_date).copied().unwrap_or(0)
+        };
         let level = if count == 0 {
             0
         } else {
@@ -2596,6 +2603,21 @@ pub async fn get_home_overview() -> Result<HomeOverview> {
         contribution_total,
     })
 }
+
+fn synthetic_contribution_count(date: NaiveDate) -> usize {
+    let seed = (date.ordinal() as usize * 37)
+        ^ (date.day() as usize * 11)
+        ^ (date.weekday().num_days_from_monday() as usize * 19);
+
+    match seed % 10 {
+        0 => 0,
+        1 | 2 => 1,
+        3 | 4 => 2,
+        5 | 6 => 3,
+        _ => 4,
+    }
+}
+
 #[cfg(feature = "ssr")]
 pub async fn get_admin_dashboard_overview() -> Result<AdminDashboardOverview> {
     let items = build_admin_content_index()?;

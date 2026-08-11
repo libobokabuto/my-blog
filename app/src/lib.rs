@@ -186,7 +186,6 @@ fn SiteHeader() -> impl IntoView {
         <header class="topbar topbar-v2">
             <div class="topbar-layout">
                 <nav class="topnav topnav-v2 topbar-nav" attr:aria-label="主导航">
-                    <NavLink href="/" label="首页" hint="回到内容入口与精选阅读。" />
                     <NavLink href="/blog" label="博客" hint="正式文章与阶段性输出。" />
                     <NavLink href="/notes" label="笔记" hint="学习记录、实验过程和草稿想法。" />
                     <NavLink href="/projects" label="项目" hint="长期项目、进度和结果。" />
@@ -205,34 +204,7 @@ fn SiteHeader() -> impl IntoView {
                 </div>
 
                 <div class="topbar-profile-slot">
-                    <div class="avatar-entry">
-                        <A href="/me" attr:class="top-avatar-link" attr:aria-label="进入主页">
-                            <img
-                                class="top-avatar-image"
-                                src=AVATAR_IMAGE_PATH
-                                alt="站点头像"
-                            />
-                        </A>
-                        <div class="avatar-popover">
-                            <div class="avatar-popover-head">
-                                <img
-                                    class="avatar-popover-image"
-                                    src=AVATAR_IMAGE_PATH
-                                    alt="站点头像"
-                                />
-                                <div>
-                                    <strong>"主页"</strong>
-                                    <p>"从这里看最近更新和主要内容。"</p>
-                                </div>
-                            </div>
-                            <div class="avatar-popover-links">
-                                <A href="/me">"查看主页"</A>
-                                <A href="/blog">"进入博客"</A>
-                                <A href="/notes">"翻看笔记"</A>
-                            </div>
-                            <ThemeToggle />
-                        </div>
-                    </div>
+                    <ThemeToggle />
                 </div>
             </div>
         </header>
@@ -258,9 +230,17 @@ impl ThemeChoice {
 
     fn label(self) -> &'static str {
         match self {
-            Self::System => "跟随",
-            Self::Light => "浅色",
-            Self::Dark => "暗色",
+            Self::System => "跟随系统",
+            Self::Light => "浅色模式",
+            Self::Dark => "深色模式",
+        }
+    }
+
+    fn icon(self) -> &'static str {
+        match self {
+            Self::System => "◐",
+            Self::Light => "☀",
+            Self::Dark => "☾",
         }
     }
 }
@@ -346,9 +326,10 @@ fn ThemeToggle() -> impl IntoView {
                             on:click=move |_| theme.set(choice)
                             role="tab"
                             aria-selected=move || if theme.get() == choice { "true" } else { "false" }
+                            attr:aria-label=choice.label()
                             title=choice.label()
                         >
-                            <span>{choice.label()}</span>
+                            <span class="theme-toggle-icon" aria-hidden="true">{choice.icon()}</span>
                         </button>
                     }
                 })
@@ -385,27 +366,30 @@ fn HomePage() -> impl IntoView {
             <div class="home-canvas">
                 <div class="home-hero-stage">
                     <div class="home-hero-copy">
-                        <div class="section-kicker">"首页"</div>
-                        <p class="eyebrow">"Content first"</p>
                         <h1>"先看内容，再决定要不要认识我。"</h1>
-                        <p class="lede">"把博客、笔记和项目摊开，让首页像一张完整画面，而不是一摞重复的卡片。"</p>
                         <div class="hero-actions">
                             <A href="/blog" attr:class="button primary">"先读博客"</A>
                             <A href="/notes" attr:class="button ghost">"再看笔记"</A>
                             <A href="/me" attr:class="button ghost">"了解我现在在做什么"</A>
                         </div>
                     </div>
-                    <div class="home-hero-orbit" aria-hidden="true">
-                        <div class="home-hero-glow home-hero-glow-a"></div>
-                        <div class="home-hero-glow home-hero-glow-b"></div>
+                    <div class="home-hero-orbit">
+                        <div class="home-hero-glow home-hero-glow-a" aria-hidden="true"></div>
+                        <div class="home-hero-glow home-hero-glow-b" aria-hidden="true"></div>
                         <div class="home-hero-core">
-                            <img class="home-hero-avatar" src=AVATAR_IMAGE_PATH alt="" />
+                            <A
+                                href="/"
+                                attr:class="home-hero-avatar-link"
+                                attr:aria-label="返回首页"
+                            >
+                                <img class="home-hero-avatar" src=AVATAR_IMAGE_PATH alt="站点头像" />
+                            </A>
                             <strong>"x86-Sim"</strong>
                             <span class="meta-label">"当前工作"</span>
                         </div>
-                        <span class="home-orbit-chip home-orbit-chip-a">"Rust"</span>
-                        <span class="home-orbit-chip home-orbit-chip-b">"Leptos"</span>
-                        <span class="home-orbit-chip home-orbit-chip-c">"Boot"</span>
+                        <span class="home-orbit-chip home-orbit-chip-a" aria-hidden="true">"Rust"</span>
+                        <span class="home-orbit-chip home-orbit-chip-b" aria-hidden="true">"Leptos"</span>
+                        <span class="home-orbit-chip home-orbit-chip-c" aria-hidden="true">"Boot"</span>
                     </div>
                 </div>
 
@@ -417,6 +401,8 @@ fn HomePage() -> impl IntoView {
                         })
                     }}
                 </Suspense>
+
+                <HomeFooter />
             </div>
         </section>
     }
@@ -524,7 +510,39 @@ fn HomePreview(overview: HomeOverview) -> impl IntoView {
                     </section>
                 </aside>
             </div>
-        }
+    }
+}
+
+#[component]
+fn HomeFooter() -> impl IntoView {
+    view! {
+        <footer class="home-footer-band compact-home-footer" aria-label="首页页脚">
+            <div class="home-footer-grid">
+                <div class="home-footer-copy">
+                    <span class="meta-label">"页脚"</span>
+                    <p>"这里先保留给导航、状态和轻量入口。"</p>
+                </div>
+
+                <nav class="home-footer-links" aria-label="页脚导航">
+                    <A href="/blog">"博客"</A>
+                    <A href="/notes">"笔记"</A>
+                    <A href="/projects">"项目"</A>
+                    <A href="/me">"主页"</A>
+                </nav>
+
+                <div class="home-footer-state">
+                    <span class="meta-label">"当前聚焦"</span>
+                    <strong>"x86-Sim"</strong>
+                    <small>"BIOS 加载链路与设备初始化"</small>
+                </div>
+            </div>
+
+            <div class="home-footer-bar">
+                <span>"© 2025-2026 cosA"</span>
+                <span>"Rust · Leptos"</span>
+            </div>
+        </footer>
+    }
 }
 
 #[component]
