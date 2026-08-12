@@ -69,6 +69,8 @@ pub fn App() -> impl IntoView {
 
     view! {
         <Stylesheet id="leptos" href=stylesheet_href />
+        <Link rel="icon" href=AVATAR_IMAGE_PATH />
+        <Link rel="apple-touch-icon" href=AVATAR_IMAGE_PATH />
         <Title text="cosA" />
         <Meta
             name="description"
