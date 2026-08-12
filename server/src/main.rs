@@ -9,7 +9,7 @@ use axum::{
 };
 use leptos::config::get_configuration;
 use leptos_axum::{handle_server_fns, render_app_to_stream};
-use tower_http::services::ServeDir;
+use tower_http::services::{ServeDir, ServeFile};
 use tracing_subscriber::{fmt, EnvFilter};
 
 #[tokio::main]
@@ -48,6 +48,14 @@ async fn main() {
                 let site_url = site_url.clone();
                 move || sitemap_handler(site_url.clone())
             }),
+        )
+        .route_service(
+            "/favicon.ico",
+            ServeFile::new(format!("{site_root}/favicon.ico")),
+        )
+        .route_service(
+            "/apple-touch-icon.png",
+            ServeFile::new(format!("{site_root}/apple-touch-icon.png")),
         )
         .nest_service("/images", ServeDir::new(format!("{site_root}/images")))
         .nest_service("/pkg", ServeDir::new(format!("{site_root}/pkg")))

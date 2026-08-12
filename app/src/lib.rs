@@ -26,6 +26,8 @@ use leptos::config::LeptosOptions;
 const DEFAULT_SITE_URL: &str = "http://127.0.0.1:3000";
 const STYLESHEET_VERSION: &str = "20260625-catppuccin";
 const AVATAR_IMAGE_PATH: &str = "/images/avatar/wen-avatar.jpg";
+const FAVICON_PATH: &str = "/favicon.ico";
+const APPLE_TOUCH_ICON_PATH: &str = "/apple-touch-icon.png";
 #[cfg(not(feature = "ssr"))]
 const THEME_STORAGE_KEY: &str = "theme-preference";
 const THEME_BOOTSTRAP_SCRIPT: &str = r#"
@@ -69,8 +71,9 @@ pub fn App() -> impl IntoView {
 
     view! {
         <Stylesheet id="leptos" href=stylesheet_href />
-        <Link rel="icon" href=AVATAR_IMAGE_PATH />
-        <Link rel="apple-touch-icon" href=AVATAR_IMAGE_PATH />
+        <Link rel="icon" href=FAVICON_PATH />
+        <Link rel="shortcut icon" href=FAVICON_PATH />
+        <Link rel="apple-touch-icon" href=APPLE_TOUCH_ICON_PATH />
         <Title text="cosA" />
         <Meta
             name="description"
