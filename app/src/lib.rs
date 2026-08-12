@@ -540,6 +540,9 @@ fn HomeFooter() -> impl IntoView {
 
             <div class="home-footer-bar">
                 <span>"© 2025-2026 cosA"</span>
+                <span class="home-footer-icp">
+                    <a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer noopener">"豫ICP备2026037210号"</a>
+                </span>
                 <span>"Rust · Leptos"</span>
             </div>
         </footer>

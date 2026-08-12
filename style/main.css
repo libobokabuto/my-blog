@@ -1213,6 +1213,20 @@ a {
   border-top: 1px solid var(--line);
   color: var(--text-muted);
   font-size: 0.86rem;
+  flex-wrap: wrap;
+}
+
+.home-footer-icp {
+  display: inline-flex;
+  align-items: center;
+}
+
+.home-footer-icp a {
+  color: inherit;
+}
+
+.home-footer-icp a:hover {
+  color: var(--text);
 }
 
 .home-metric-grid {
