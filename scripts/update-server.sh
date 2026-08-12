@@ -7,6 +7,8 @@
 #       cd /srv/my-blog && git pull
 #   之后每次更新，在服务器上运行这一条命令即可：
 #       cd /srv/my-blog && bash scripts/update-server.sh
+#   强制重新编译（跳过 git pull，如首次对接 GitHub 时）：
+#       cd /srv/my-blog && bash scripts/update-server.sh --force
 #
 # 脚本做的事：
 #   1. git pull --ff-only 拉取最新代码（无更新则直接退出，不浪费编译时间）
@@ -36,21 +38,33 @@ cd "$PROJECT_DIR"
 log() { echo "==> [$(date '+%F %T')] $*"; }
 die() { echo "!! $*" >&2; exit 1; }
 
+# 参数解析：--force 跳过 git pull，强制重新编译并重启（首次对接 GitHub 或想强制重编时用）
+FORCE=0
+if [ "${1:-}" = "--force" ]; then
+  FORCE=1
+  log "强制模式：跳过 git pull，直接编译并重启"
+fi
+
 log "开始更新：$PROJECT_DIR"
 
-# 1) 拉取最新代码
-OLD_COMMIT=$(git rev-parse --short HEAD)
-log "git pull 拉取最新代码"
-if ! git pull --ff-only; then
-  die "git pull 失败。常见原因：服务器上有未提交改动（先运行 git status 查看/处理），或网络/认证问题。"
-fi
-NEW_COMMIT=$(git rev-parse --short HEAD)
+# 1) 拉取最新代码（--force 模式下跳过）
+if [ "$FORCE" -eq 0 ]; then
+  OLD_COMMIT=$(git rev-parse --short HEAD)
+  log "git pull 拉取最新代码"
+  if ! git pull --ff-only; then
+    die "git pull 失败。常见原因：服务器上有未提交改动（先运行 git status 查看/处理），或网络/认证问题。"
+  fi
+  NEW_COMMIT=$(git rev-parse --short HEAD)
 
-if [ "$OLD_COMMIT" = "$NEW_COMMIT" ]; then
-  log "代码没有更新（仍为 $NEW_COMMIT），跳过编译与重启"
-  exit 0
+  if [ "$OLD_COMMIT" = "$NEW_COMMIT" ]; then
+    log "代码没有更新（仍为 $NEW_COMMIT），跳过编译与重启"
+    exit 0
+  fi
+  log "更新内容：$OLD_COMMIT -> $NEW_COMMIT"
+else
+  NEW_COMMIT=$(git rev-parse --short HEAD)
+  log "当前版本：$NEW_COMMIT"
 fi
-log "更新内容：$OLD_COMMIT -> $NEW_COMMIT"
 
 # 2) 编译（最耗时；编译期间旧版服务不停止）
 log "开始编译：${BUILD_CMD[*]}"
